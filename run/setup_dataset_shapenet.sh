@@ -7,7 +7,7 @@ if [ -z "${SL3A_DATASET_ROOT}" ]; then
     exit 255
 fi
 
-if [ -f "${SL3A_ROOT}/.marker.dataset.completed" ]; then
+if [ -f "${SL3A_DATASET_ROOT}/.marker.dataset.shapenet.completed" ]; then
     echo "Dataset already prepared"
     exit 0
 fi
@@ -25,4 +25,4 @@ wget https://shapenet.cs.stanford.edu/shapenet/obj-zip/ShapeNetSem.v0/metadata.c
 
 unzip models-OBJ.zip
 
-touch "${SL3A_ROOT}/.marker.dataset.completed"
+touch "${SL3A_DATASET_ROOT}/.marker.dataset.shapenet.completed"
