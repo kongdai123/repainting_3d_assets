@@ -182,11 +182,11 @@ def train_nerf(args):
 
                 
 
-		cmd = f"ffmpeg -y -framerate {args.video_fps} -i {path_video_tmp}/%04d.jpg -c:v libx264 -pix_fmt yuv420p {args.video_output}"
+		cmd = f"ffmpeg -y -framerate {args.video_fps} -i {path_video_tmp}/%04d.jpg -c:v mpeg4 -q:v 2 -pix_fmt yuv420p {args.video_output}"
 		print(subprocess.getoutput("which ffmpeg"))
 		print(cmd)
 		os.system(cmd)
-		shutil.rmtree(path_video_tmp)
+		shutil.rmtree(path_video_tmp, ignore_errors=True)
 
 		# place a marker of completion
 		path_marker_completed = f"{args.scene}/.marker.completed"

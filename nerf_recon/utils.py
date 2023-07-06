@@ -40,6 +40,6 @@ def listify_matrix(mat):
 
 def remove_artifacts(save_dir):
     os.remove(f"{save_dir}/transforms.json")
-    shutil.rmtree(f"{save_dir}/dataset")
-    shutil.rmtree(f"{save_dir}/vis")
-    shutil.rmtree(f"{save_dir}/sil")
+    shutil.rmtree(f"{save_dir}/dataset", ignore_errors=True)
+    shutil.rmtree(f"{save_dir}/vis", ignore_errors=True)
+    shutil.rmtree(f"{save_dir}/sil", ignore_errors=True)

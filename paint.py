@@ -7,7 +7,7 @@ from diff_view_gen.reproj import render_silhouette
 from diff_view_gen.inpaint import initialize_meshes, inpaint_first_view, inpaint_facade, write_train_transforms,inpaint_bidirectional
 from diff_view_gen.depth_supervised_inpainting_pipeline import StableDiffusionDepth2ImgInpaintingPipeline
 from nerf_recon.train_ngp import sync_config, train_nerf
-
+from nerf_recon.utils import remove_artifacts
 
 
 

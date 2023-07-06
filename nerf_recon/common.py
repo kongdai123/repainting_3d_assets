@@ -20,17 +20,22 @@ from scipy.ndimage.filters import convolve1d
 import struct
 import sys
 
-from .flip import * 
+from .flip import *
 
 CUDA_DEFAULT_DEVICE_COMPUTE_CAPABILITY = ''.join([str(a) for a in torch.cuda.get_device_capability()])
+print(f'{CUDA_DEFAULT_DEVICE_COMPUTE_CAPABILITY=}')
 
-PAPER_FOLDER = Path(os.environ.get('PAPER_FOLDER', "PATH_TO_NGP_LIBRARY"))
+SL3A_INSTANTNGP_ROOT = os.environ.get('SL3A_INSTANTNGP_ROOT', None)
+if SL3A_INSTANTNGP_ROOT is None:
+	raise RuntimeError('Instant NGP not installed according to the installation guidelines')
+PAPER_FOLDER = Path(SL3A_INSTANTNGP_ROOT) / "instant-ngp"
+
 SUPPL_FOLDER = PAPER_FOLDER/"supplemental"
 SCRIPTS_FOLDER = PAPER_FOLDER/"scripts"
 TEMPLATE_FOLDER = SCRIPTS_FOLDER/"template"
 DATA_FOLDER = SCRIPTS_FOLDER/"data"
 
-ROOT_DIR = PAPER_FOLDER
+ROOT_DIR = str(PAPER_FOLDER)
 
 RESULTS_DIR = os.path.join(ROOT_DIR, "results")
 NGP_DATA_FOLDER = os.environ.get("NGP_DATA_FOLDER") or os.path.join(ROOT_DIR, "data")
