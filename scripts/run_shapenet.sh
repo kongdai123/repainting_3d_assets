@@ -2,13 +2,24 @@
 set -e
 set -x
 
-SL3A_ENV_NAME=${SL3A_ENV_NAME:-sl3a}
-
 if [ $# -lt 2 ]; then
     echo "Error: Insufficient command line arguments:"
     echo "$0 <working_dir> [list_of_shapenet_model_ids]"
     exit 255
 fi
+
+if ! type source > /dev/null 2>&1; then
+    echo "Restarting the script with bash interpreter"
+    bash "$0" "$@"
+    exit $?
+fi
+
+if [ -n "$CONDA_PREFIX" ]; then
+    echo "Deactivating Conda environment: $CONDA_PREFIX"
+    conda deactivate
+fi
+
+SL3A_ENV_NAME=${SL3A_ENV_NAME:-sl3a}
 
 SL3A_ROOT=$1
 shift
