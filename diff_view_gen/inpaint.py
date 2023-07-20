@@ -91,7 +91,7 @@ def inpaint_first_view(meshes, pipe, latents, inpaint_config, mesh_config, devic
     ipt_save_dir = create_dir(f'{dataset_dir}/{i}')
     ipt_depth_dir = create_dir(f'{dataset_dir}/{i}/depth')
     image.save(f'{ipt_save_dir}/out.png')        
-    image = np.asarray(image.convert('RGBA'))
+    image = np.asarray(image.convert('RGBA')).copy()
 
     if np.all(image[:,:,:3] == np.zeros_like(image[:,:,:3])):
         image = 255 * np.ones_like(image)
@@ -118,7 +118,7 @@ def inpaint_first_view(meshes, pipe, latents, inpaint_config, mesh_config, devic
     print(view_dep_prompt(prompt_obj, next_angle, color_obj))
     image = pipe(prompt=view_dep_prompt(prompt_obj, next_angle, color_obj), image=input_image,mask_image = mask,depth_map = depth_tensor[None, :,: ],negative_prompt=n_propmt, strength=1,num_inference_steps = num_inference_steps, latents = latents, inpainting_strength = 0).images[0]
     image.save(f'{ipt_save_dir}/out.png')        
-    image = np.asarray(image.convert('RGBA'))
+    image = np.asarray(image.convert('RGBA')).copy()
 
     if np.all(image[:,:,:3] == np.zeros_like(image[:,:,:3])):
         image = np.random.randint(0, high = 255, size = image.shape).astype(np.uint8)
@@ -220,7 +220,7 @@ def inpaint_new_angle(cur_angle, next_angle, inc_total,  inpaint_config, mesh_co
     image = pipe(prompt=view_dep_prompt(prompt_obj, next_angle, color_obj), image=input_image,mask_image = mask,depth_map = depth_tensor[None, :,: ],negative_prompt=n_propmt, strength=1,num_inference_steps = num_inference_steps, latents = latents, inpainting_strength = inpainting_strength, mask_blend_kernel = mask_blend_kernel, latent_blend_kernel = latent_blend_kernel).images[0]
 
     image.save(f'{ipt_save_dir}/out.png')        
-    image = np.asarray(image.convert('RGBA'))
+    image = np.asarray(image.convert('RGBA')).copy()
 
     if np.all(image[:,:,:3] == np.zeros_like(image[:,:,:3])):
         image = np.random.randint(0, high = 255, size = image.shape).astype(np.uint8)
@@ -341,7 +341,7 @@ def inpaint_bidirectional(view_1, view_2, view_synth, inpaint_config, mesh_confi
     image = pipe(view_dep_prompt(prompt_obj, view_synth, color_obj), image=image_pil,mask_image = mask,depth_map = depth_tensor[None,:,:], negative_prompt=n_propmt, strength=1,num_inference_steps = num_inference_steps, latents = latents,inpainting_strength = inpainting_strength, mask_blend_kernel = mask_blend_kernel, latent_blend_kernel = latent_blend_kernel).images[0]
 
     image.save(f'{ipt_save_dir}/out.png')        
-    image = np.asarray(image.convert('RGBA'))
+    image = np.asarray(image.convert('RGBA')).copy()
     if np.all(image[:,:,:3] == np.zeros_like(image[:,:,:3])):
         image = np.random.randint(0, high = 255, size = image.shape).astype(np.uint8)
         image = Image.fromarray(image.astype("uint8"))

@@ -16,6 +16,9 @@ class obj(object):
             else:
                 setattr(self, k, v)
 
+    def __repr__(self):
+        return str(self.__dict__)
+
 def create_dir(dir_name):
     os.makedirs(dir_name, exist_ok=True)
     return dir_name

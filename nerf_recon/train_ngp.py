@@ -20,7 +20,6 @@ import shutil
 import time
 
 from .common import *
-from .scenes import *
 
 from tqdm import tqdm
 
@@ -49,12 +48,8 @@ def sync_config(nerf_config, mesh_config):
 
 def train_nerf(args):
 	mode = ngp.TestbedMode.Nerf
-	configs_dir = os.path.join(ROOT_DIR, "configs", "nerf")
-	scenes = scenes_nerf
+	configs_dir = os.path.join(args.path_instantngp, "configs", "nerf")
 	base_network = os.path.join(configs_dir, "base.json")
-	if args.scene in scenes:
-		network = scenes[args.scene]["network"] if "network" in scenes[args.scene] else "base"
-		base_network = os.path.join(configs_dir, network+".json")
 	network = args.network if args.network else base_network
 	if not os.path.isabs(network):
 		network = os.path.join(configs_dir, network)
@@ -67,8 +62,6 @@ def train_nerf(args):
 	testbed.nerf.training.random_bg_color = True
 	if args.scene:
 		scene = args.scene
-		if not os.path.exists(args.scene) and args.scene in scenes:
-			scene = os.path.join(scenes[args.scene]["data_dir"], scenes[args.scene]["dataset"])
 		testbed.load_training_data(scene)
 	testbed.reload_network_from_file(network)
 	testbed.shall_train = True
@@ -175,7 +168,7 @@ def train_nerf(args):
 				image.save(f"{path_video_tmp}/{i:04d}.jpg")
 				if i in [0, 45, 90, 135, 180, 225, 270, 315]:
 					spin_views_dir = create_dir(f"{args.scene}/spin_views")
-					image = np.asarray(image.convert('RGBA'))
+					image = np.asarray(image.convert('RGBA')).copy()
 					image[:,:, 3] = mask
 					image = Image.fromarray(image)
 					image.save(f"{spin_views_dir}/deg{i:03d}.png")

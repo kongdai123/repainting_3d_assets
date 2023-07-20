@@ -25,24 +25,32 @@ SL3A_ROOT=$1
 shift
 
 SL3A_CONDA_ROOT="${SL3A_ROOT}/conda"
-SL3A_DATASET_ROOT="${SL3A_ROOT}/dataset"
-export SL3A_INSTANTNGP_ROOT="${SL3A_ROOT}/instantngp"  # TODO: make sure the code does not use any of the SL3A env vars
-
 if [ ! -f "${SL3A_CONDA_ROOT}/miniconda3/bin/conda" ]; then
     echo "\"conda\" not found, check setup_conda_bin.sh"
     exit 255
 fi
-
 source "${SL3A_CONDA_ROOT}/miniconda3/bin/activate" ${SL3A_ENV_NAME}
+
+SL3A_DATASET_ROOT_DEFAULT="${SL3A_ROOT}/dataset"
+SL3A_DATASET_ROOT="${SL3A_DATASET_ROOT:-${SL3A_DATASET_ROOT_DEFAULT}}"
+
+SL3A_INSTANTNGP_ROOT_DEFAULT="${SL3A_ROOT}/instantngp"
+SL3A_INSTANTNGP_ROOT="${SL3A_INSTANTNGP_ROOT:-${SL3A_INSTANTNGP_ROOT_DEFAULT}}"
+
+SL3A_OUT_SHAPENET_DEFAULT="${SL3A_ROOT}/out_shapenet"
+SL3A_OUT_SHAPENET="${SL3A_OUT_SHAPENET:-${SL3A_OUT_SHAPENET_DEFAULT}}"
+mkdir -p "${SL3A_OUT_SHAPENET}"
 
 SELF=$(realpath "$0")
 SELF_DIR=$(dirname "${SELF}")
 SL3A_CODE_ROOT=$(realpath "${SELF_DIR}/..")
 
-SL3A_OUT_SHAPENET="${SL3A_ROOT}/out_shapenet"
-mkdir -p "${SL3A_OUT_SHAPENET}"
+export TRANSFORMERS_CACHE="${SL3A_ROOT}/hfcache"
+export HF_DATASETS_CACHE="${SL3A_ROOT}/hfcache"
+export HF_HOME="${SL3A_ROOT}/hfcache"
 
 cd "${SL3A_CODE_ROOT}" && python -m main \
+    --path_instantngp "${SL3A_INSTANTNGP_ROOT}/instant-ngp" \
     --path_shapenet "${SL3A_DATASET_ROOT}" \
     --path_out "${SL3A_OUT_SHAPENET}" \
     --range_ids_list "$@"

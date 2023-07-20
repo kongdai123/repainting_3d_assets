@@ -22,35 +22,49 @@ import sys
 
 from .flip import *
 
-CUDA_DEFAULT_DEVICE_COMPUTE_CAPABILITY = ''.join([str(a) for a in torch.cuda.get_device_capability()])
-print(f'{CUDA_DEFAULT_DEVICE_COMPUTE_CAPABILITY=}')
 
-SL3A_INSTANTNGP_ROOT = os.environ.get('SL3A_INSTANTNGP_ROOT', None)
-if SL3A_INSTANTNGP_ROOT is None:
-	raise RuntimeError('Instant NGP not installed according to the installation guidelines')
-PAPER_FOLDER = Path(SL3A_INSTANTNGP_ROOT) / "instant-ngp"
+def find_instantngp_binaries(path_instantngp, verbose=True):
+	if not os.path.isdir(path_instantngp):
+		raise RuntimeError(f'{path_instantngp=} is not a directory')
 
-SUPPL_FOLDER = PAPER_FOLDER/"supplemental"
-SCRIPTS_FOLDER = PAPER_FOLDER/"scripts"
-TEMPLATE_FOLDER = SCRIPTS_FOLDER/"template"
-DATA_FOLDER = SCRIPTS_FOLDER/"data"
+	entries = os.listdir(path_instantngp)
 
-ROOT_DIR = str(PAPER_FOLDER)
+	build_dirs = {
+		int(e[len('build_sm'):]): os.path.join(path_instantngp, e)
+		for e in entries
+		if os.path.isdir(os.path.join(path_instantngp, e)) and e.startswith("build_sm")
+	}
 
-RESULTS_DIR = os.path.join(ROOT_DIR, "results")
-NGP_DATA_FOLDER = os.environ.get("NGP_DATA_FOLDER") or os.path.join(ROOT_DIR, "data")
+	if len(build_dirs) == 0:
+		raise RuntimeError(f'{path_instantngp=} does not contain any build directories')
+
+	CUDA_DEFAULT_DEVICE_COMPUTE_CAPABILITY = int(''.join([str(a) for a in torch.cuda.get_device_capability()]))
+
+	resolved_version = None
+	for k in sorted(build_dirs.keys(), reverse=True):
+		if k <= CUDA_DEFAULT_DEVICE_COMPUTE_CAPABILITY:
+			resolved_version = k
+			break
+	if resolved_version is None:
+		raise RuntimeError(
+			f"The detected CUDA architecture {CUDA_DEFAULT_DEVICE_COMPUTE_CAPABILITY} cannot be treated by any of the "
+			f"available builds: {sorted(build_dirs.keys())}"
+		)
+
+	if verbose:
+		print(
+			f'Found instant-ngp build {resolved_version} for the detected CUDA SM '
+			f'{CUDA_DEFAULT_DEVICE_COMPUTE_CAPABILITY}'
+		)
+
+	out = build_dirs[resolved_version]
+	return out
 
 
-NERF_DATA_FOLDER = os.path.join(NGP_DATA_FOLDER, "nerf")
-SDF_DATA_FOLDER = os.path.join(NGP_DATA_FOLDER, "sdf")
-IMAGE_DATA_FOLDER = os.path.join(NGP_DATA_FOLDER, "image")
-VOLUME_DATA_FOLDER = os.path.join(NGP_DATA_FOLDER, "volume")
+def add_instantngp_sys_path(path_instantngp, verbose=True):
+	path = find_instantngp_binaries(path_instantngp, verbose=verbose)
+	sys.path.append(path)
 
-# Search for pyngp in the build folder.
-sys.path += [os.path.dirname(pyd) for pyd in glob.iglob(os.path.join(ROOT_DIR, "build", "**/*.pyd"), recursive=True)]
-sys.path += [os.path.dirname(pyd) for pyd in glob.iglob(os.path.join(ROOT_DIR, "build", "**/*.so"), recursive=True)]
-sys.path += [os.path.dirname(pyd) for pyd in glob.iglob(os.path.join(ROOT_DIR, f"build_sm{CUDA_DEFAULT_DEVICE_COMPUTE_CAPABILITY}", "**/*.pyd"), recursive=True)]
-sys.path += [os.path.dirname(pyd) for pyd in glob.iglob(os.path.join(ROOT_DIR, f"build_sm{CUDA_DEFAULT_DEVICE_COMPUTE_CAPABILITY}", "**/*.so"), recursive=True)]
 
 def repl(testbed):
 	print("-------------------\npress Ctrl-Z to return to gui\n---------------------------")
@@ -58,9 +72,6 @@ def repl(testbed):
 	print("------- returning to gui...")
 
 def mse2psnr(x): return -10.*np.log(x)/np.log(10.)
-
-def sanitize_path(path):
-	return str(PurePosixPath(path.relative_to(PAPER_FOLDER)))
 
 # from https://stackoverflow.com/questions/31638651/how-can-i-draw-lines-into-numpy-arrays
 def trapez(y,y0,w):
