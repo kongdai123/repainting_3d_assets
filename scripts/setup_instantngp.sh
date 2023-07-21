@@ -29,6 +29,7 @@ if [ ! -f "${SL3A_INSTANTNGP_ROOT}/.marker.ingp.cloned" ]; then
     cd instant-ngp
     git reset --hard 54aba7cfbeaf6a60f29469a9938485bebeba24c3
     git submodule update --init --recursive
+    find . -type d -name .git -exec rm -rf {} +
     touch "${SL3A_INSTANTNGP_ROOT}/.marker.ingp.cloned"
 else
     cd instant-ngp
