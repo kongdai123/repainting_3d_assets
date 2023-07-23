@@ -44,7 +44,8 @@ if [ ! -f "${SL3A_INSTANTNGP_ROOT}/.marker.ingp.patched" ]; then
     touch "${SL3A_INSTANTNGP_ROOT}/.marker.ingp.patched"
 fi
 
-SL3A_INSTANTNGP_ARCHS=${SL3A_INSTANTNGP_ARCHS:-"61 70 75 80 86 89 90"}
+SL3A_INSTANTNGP_ARCHS=${SL3A_INSTANTNGP_ARCHS:-"60 86"}
+# SL3A_INSTANTNGP_ARCHS=${SL3A_INSTANTNGP_ARCHS:-"60 70 75 80 86 89 90"}
 
 for ARCH in ${SL3A_INSTANTNGP_ARCHS}; do
     if [ -f "${SL3A_INSTANTNGP_ROOT}/.marker.ingp.compiled.sm${ARCH}" ]; then
