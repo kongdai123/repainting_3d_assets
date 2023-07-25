@@ -7,6 +7,14 @@ if ! type source > /dev/null 2>&1; then
     bash "$0" "$@"
     exit $?
 fi
+SELF=$(readlink -f "${BASH_SOURCE[0]}")
+SELF_DIR=$(dirname "${SELF}")
+SL3A_CODE_ROOT=$(realpath "${SELF_DIR}/..")
+
+if [ -z "${SL3A_CONDA_ROOT}" ]; then
+    echo "SL3A_CONDA_ROOT not set or is empty"
+    exit 255
+fi
 
 if [ -z "${SL3A_INSTANTNGP_ROOT}" ]; then
     echo "SL3A_INSTANTNGP_ROOT not set or is empty"
@@ -36,11 +44,9 @@ else
 fi
 
 if [ ! -f "${SL3A_INSTANTNGP_ROOT}/.marker.ingp.patched" ]; then
-    SELF=$(realpath "$0")
-    SELF_DIR=$(dirname "${SELF}")
-    SL3A_CODE_ROOT=$(realpath "${SELF_DIR}/..")
-    cp "${SL3A_CODE_ROOT}/nerf_recon/ngp_files/grid.h" dependencies/tiny-cuda-nn/include/tiny-cuda-nn/encodings/
-    cp "${SL3A_CODE_ROOT}/nerf_recon/ngp_files/fine_network.json" configs/nerf/
+    cd dependencies/tiny-cuda-nn/include/tiny-cuda-nn/encodings/
+    patch -N -p1 -i "${SL3A_CODE_ROOT}/nerf_recon/ngp_files/grid.h.patch"
+    cp "${SL3A_CODE_ROOT}/nerf_recon/ngp_files/fine_network.json" "${SL3A_INSTANTNGP_ROOT}/instant-ngp/configs/nerf/"
     touch "${SL3A_INSTANTNGP_ROOT}/.marker.ingp.patched"
 fi
 

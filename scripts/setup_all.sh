@@ -2,13 +2,18 @@
 set -e
 set -x
 
+if ! type source > /dev/null 2>&1; then
+    echo "Restarting the script with bash interpreter"
+    bash "$0" "$@"
+    exit $?
+fi
+SELF=$(readlink -f "${BASH_SOURCE[0]}")
+SELF_DIR=$(dirname "${SELF}")
+
 if [ $# -ne 1 ]; then
     echo "Error: Exactly one argument is required - path to the working directory"
     exit 255
 fi
-
-SELF=$(realpath "$0")
-SELF_DIR=$(dirname "${SELF}")
 
 export SL3A_ROOT=$1
 
