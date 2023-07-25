@@ -16,7 +16,6 @@ import contextlib
 import inspect
 from typing import Callable, List, Optional, Union
 
-import numpy as np
 import torch
 
 import PIL
@@ -37,16 +36,16 @@ from diffusers.schedulers import (
 )
 from diffusers.utils import PIL_INTERPOLATION, deprecate, logging
 
-
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
 
+from .mask_options import *
 
-from .mask_options import * 
 
 # Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img.preprocess
 
 def custom_mean(block, axis):
-    return   np.sum(block, axis)/ np.maximum(np.sum(block != 0, axis), 1)
+    return np.sum(block, axis) / np.maximum(np.sum(block != 0, axis), 1)
+
 
 def preprocess(image):
     if isinstance(image, torch.Tensor):
@@ -68,14 +67,13 @@ def preprocess(image):
         image = torch.cat(image, dim=0)
     return image
 
-def preprocess_mask(mask, scale_factor=8, mask_blend_kernel  = -1):
-    # mask = mask.convert("L")
+
+def preprocess_mask(mask, scale_factor=8, mask_blend_kernel=-1):
     w, h = mask.size
     w, h = map(lambda x: x - x % 32, (w, h))  # resize to integer multiple of 32
     mask = mask.resize((w // scale_factor, h // scale_factor), resample=PIL_INTERPOLATION["nearest"])
-    # print(mask_blend_kernel)
     if mask_blend_kernel > 0:
-        mask = PIL.ImageOps.invert(blend_mask(PIL.ImageOps.invert(mask), kernel_size =mask_blend_kernel))
+        mask = PIL.ImageOps.invert(blend_mask(PIL.ImageOps.invert(mask), kernel_size=mask_blend_kernel))
     mask = np.array(mask).astype(np.float32) / 255.0
     mask = np.tile(mask, (4, 1, 1))
     mask = mask[None].transpose(0, 1, 2, 3)  # what does this step do?
@@ -108,21 +106,21 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
     """
 
     def __init__(
-        self,
-        vae: AutoencoderKL,
-        text_encoder: CLIPTextModel,
-        tokenizer: CLIPTokenizer,
-        unet: UNet2DConditionModel,
-        scheduler: Union[
-            DDIMScheduler,
-            PNDMScheduler,
-            LMSDiscreteScheduler,
-            EulerDiscreteScheduler,
-            EulerAncestralDiscreteScheduler,
-            DPMSolverMultistepScheduler,
-        ],
-        depth_estimator: DPTForDepthEstimation,
-        feature_extractor: DPTFeatureExtractor,
+            self,
+            vae: AutoencoderKL,
+            text_encoder: CLIPTextModel,
+            tokenizer: CLIPTokenizer,
+            unet: UNet2DConditionModel,
+            scheduler: Union[
+                DDIMScheduler,
+                PNDMScheduler,
+                LMSDiscreteScheduler,
+                EulerDiscreteScheduler,
+                EulerAncestralDiscreteScheduler,
+                DPMSolverMultistepScheduler,
+            ],
+            depth_estimator: DPTForDepthEstimation,
+            feature_extractor: DPTFeatureExtractor,
     ):
         super().__init__()
 
@@ -187,9 +185,9 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
             return self.device
         for module in self.unet.modules():
             if (
-                hasattr(module, "_hf_hook")
-                and hasattr(module._hf_hook, "execution_device")
-                and module._hf_hook.execution_device is not None
+                    hasattr(module, "_hf_hook")
+                    and hasattr(module._hf_hook, "execution_device")
+                    and module._hf_hook.execution_device is not None
             ):
                 return torch.device(module._hf_hook.execution_device)
         return self.device
@@ -225,7 +223,7 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
         untruncated_ids = self.tokenizer(prompt, padding="longest", return_tensors="pt").input_ids
 
         if untruncated_ids.shape[-1] >= text_input_ids.shape[-1] and not torch.equal(text_input_ids, untruncated_ids):
-            removed_text = self.tokenizer.batch_decode(untruncated_ids[:, self.tokenizer.model_max_length - 1 : -1])
+            removed_text = self.tokenizer.batch_decode(untruncated_ids[:, self.tokenizer.model_max_length - 1: -1])
             logger.warning(
                 "The following part of your input was truncated because CLIP can only handle sequences up to"
                 f" {self.tokenizer.model_max_length} tokens: {removed_text}"
@@ -346,7 +344,7 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
             raise ValueError(f"The value of strength should in [1.0, 1.0] but is {strength}")
 
         if (callback_steps is None) or (
-            callback_steps is not None and (not isinstance(callback_steps, int) or callback_steps <= 0)
+                callback_steps is not None and (not isinstance(callback_steps, int) or callback_steps <= 0)
         ):
             raise ValueError(
                 f"`callback_steps` has to be a positive integer but is {callback_steps} of type"
@@ -364,7 +362,8 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
         return timesteps, num_inference_steps - t_start
 
     # Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img.StableDiffusionImg2ImgPipeline.prepare_latents
-    def prepare_latents(self, image, timestep, batch_size, num_images_per_prompt, dtype, device, generator=None, latents = None, mask_img = None, latent_blend_kernel = -1):
+    def prepare_latents(self, image, timestep, batch_size, num_images_per_prompt, dtype, device, generator=None,
+                        latents=None, mask_img=None, latent_blend_kernel=-1):
         image = image.to(device=device, dtype=dtype)
 
         batch_size = batch_size * num_images_per_prompt
@@ -376,26 +375,25 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
 
         if isinstance(generator, list):
             init_latents = [
-                self.vae.encode(image[i : i + 1]).latent_dist.sample(generator[i]) for i in range(batch_size)
+                self.vae.encode(image[i: i + 1]).latent_dist.sample(generator[i]) for i in range(batch_size)
             ]
             init_latents = torch.cat(init_latents, dim=0)
         else:
             init_latents = self.vae.encode(image).latent_dist.sample(generator)
 
-        init_latents = 0.18215 * init_latents # [1, 4, 64, 64]
+        init_latents = 0.18215 * init_latents  # [1, 4, 64, 64]
         if mask_img is not None and latent_blend_kernel > 0:
             init_latents = init_latents.detach().cpu().numpy()
             init_latents_min = init_latents.min()
             init_latents_max = init_latents.max()
-            init_latents = (init_latents - init_latents_min)/ (init_latents_max - init_latents_min)
+            init_latents = (init_latents - init_latents_min) / (init_latents_max - init_latents_min)
             init_latents_uint8 = (init_latents * 255).astype(np.uint8)
             for i in range(4):
-
-                latents_out = blend_img(init_latents_uint8[0,i] , (mask_img) , kernel_size =latent_blend_kernel)
-                init_latents_uint8[0,i] = latents_out
+                latents_out = blend_img(init_latents_uint8[0, i], (mask_img), kernel_size=latent_blend_kernel)
+                init_latents_uint8[0, i] = latents_out
 
             init_latents = torch.tensor(init_latents_uint8).to(dtype).to(device) / 255
-            init_latents = init_latents *  (init_latents_max - init_latents_min) + init_latents_min
+            init_latents = init_latents * (init_latents_max - init_latents_min) + init_latents_min
 
         if batch_size > init_latents.shape[0] and batch_size % init_latents.shape[0] == 0:
             # expand init_latents for batch_size
@@ -421,7 +419,8 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
             if isinstance(generator, list):
                 shape = (1,) + shape[1:]
                 noise = [
-                    torch.randn(shape, generator=generator[i], device=rand_device, dtype=dtype) for i in range(batch_size)
+                    torch.randn(shape, generator=generator[i], device=rand_device, dtype=dtype) for i in
+                    range(batch_size)
                 ]
                 noise = torch.cat(noise, dim=0).to(device)
             else:
@@ -433,18 +432,13 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
         latents_img_ori = init_latents
         init_latents = self.scheduler.add_noise(init_latents, noise, timestep)
         latents_img = init_latents
-        return latents_img,latents_img_ori
+        return latents_img, latents_img_ori
 
     def prepare_depth_map(self, image, depth_map, batch_size, do_classifier_free_guidance, dtype, device):
         if isinstance(image, PIL.Image.Image):
             image = [image]
         else:
             image = [img for img in image]
-
-        if isinstance(image[0], PIL.Image.Image):
-            width, height = image[0].size
-        else:
-            width, height = image[0].shape[-2:]
 
         if depth_map is None:
             pixel_values = self.feature_extractor(images=image, return_tensors="pt").pixel_values
@@ -455,19 +449,14 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
             with context_manger:
                 depth_map = self.depth_estimator(pixel_values).predicted_depth
         else:
-            depth_map = depth_map.to(device=device, dtype=dtype) # [1, 64, 64]
+            depth_map = depth_map.to(device=device, dtype=dtype)  # [1, 64, 64]
 
         depth_map = depth_map.cpu().numpy()
-        depth_map = skimage.measure.block_reduce(depth_map, (1, self.vae_scale_factor, self.vae_scale_factor), custom_mean)
-        
-        depth_map = torch.tensor(depth_map).to(device=device, dtype=dtype)[None, ]
-        # depth_map = torch.nn.functional.interpolate(
-        #     depth_map.unsqueeze(1),
-        #     size=(height // self.vae_scale_factor, width // self.vae_scale_factor),
-        #     mode="bicubic",
-        #     align_corners=False,
-        # ) # [1, 1, 64, 64]
-        
+        depth_map = skimage.measure.block_reduce(
+            depth_map, (1, self.vae_scale_factor, self.vae_scale_factor), custom_mean
+        )
+
+        depth_map = torch.tensor(depth_map).to(device=device, dtype=dtype)[None,]
 
         depth_min = torch.amin(depth_map, dim=[1, 2, 3], keepdim=True)
         depth_max = torch.amax(depth_map, dim=[1, 2, 3], keepdim=True)
@@ -483,27 +472,27 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
 
     @torch.no_grad()
     def __call__(
-        self,
-        prompt: Union[str, List[str]],
-        image: Union[torch.FloatTensor, PIL.Image.Image],
-        mask_image: Union[torch.FloatTensor, PIL.Image.Image] = None,
-        depth_map: Optional[torch.FloatTensor] = None,
-        strength: float = 0.8,
-        num_inference_steps: Optional[int] = 50,
-        guidance_scale: Optional[float] = 7.5,
-        negative_prompt: Optional[Union[str, List[str]]] = None,
-        num_images_per_prompt: Optional[int] = 1,
-        eta: Optional[float] = 0.0,
-        add_predicted_noise: Optional[bool] = False,
-        generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
-        output_type: Optional[str] = "pil",
-        return_dict: bool = True,
-        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
-        callback_steps: Optional[int] = 1,
-        latents:  Optional[torch.FloatTensor] = None,
-        inpainting_strength: Optional[float]= 1,
-        mask_blend_kernel: Optional[int] = -1,
-        latent_blend_kernel: Optional[int] = -1
+            self,
+            prompt: Union[str, List[str]],
+            image: Union[torch.FloatTensor, PIL.Image.Image],
+            mask_image: Union[torch.FloatTensor, PIL.Image.Image] = None,
+            depth_map: Optional[torch.FloatTensor] = None,
+            strength: float = 0.8,
+            num_inference_steps: Optional[int] = 50,
+            guidance_scale: Optional[float] = 7.5,
+            negative_prompt: Optional[Union[str, List[str]]] = None,
+            num_images_per_prompt: Optional[int] = 1,
+            eta: Optional[float] = 0.0,
+            add_predicted_noise: Optional[bool] = False,
+            generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
+            output_type: Optional[str] = "pil",
+            return_dict: bool = True,
+            callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
+            callback_steps: Optional[int] = 1,
+            latents: Optional[torch.FloatTensor] = None,
+            inpainting_strength: Optional[float] = 1,
+            mask_blend_kernel: Optional[int] = -1,
+            latent_blend_kernel: Optional[int] = -1
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -577,8 +566,6 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
         text_embeddings = self._encode_prompt(
             prompt, device, num_images_per_prompt, do_classifier_free_guidance, negative_prompt
         )
-        
-        
 
         # 4. Preprocess image
         depth_mask = self.prepare_depth_map(
@@ -589,9 +576,7 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
             text_embeddings.dtype,
             device,
         )
-        
-        
-        
+
         # 5. Prepare depth mask
         image = preprocess(image)
 
@@ -603,20 +588,22 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
         # 7. Prepare latent variables
         mask_img = None
         if not isinstance(mask_image, torch.FloatTensor) and latent_blend_kernel > 0:
-            mask_img = preprocess_mask(mask_image, self.vae_scale_factor, mask_blend_kernel  = -1 )
-            mask_img = PIL.Image.fromarray((mask_img[0,0].cpu().numpy() * 255).astype(np.uint8)).convert("1").convert("L")
+            mask_img = preprocess_mask(mask_image, self.vae_scale_factor, mask_blend_kernel=-1)
+            mask_img = PIL.Image.fromarray(
+                (mask_img[0, 0].cpu().numpy() * 255).astype(np.uint8)).convert("1").convert("L")
 
         latents_img, latents_img_ori = self.prepare_latents(
-            image, latent_timestep, batch_size, num_images_per_prompt, text_embeddings.dtype, device, generator, latents, mask_img = mask_img, latent_blend_kernel = latent_blend_kernel)
-        
+            image, latent_timestep, batch_size, num_images_per_prompt, text_embeddings.dtype, device, generator,
+            latents, mask_img=mask_img, latent_blend_kernel=latent_blend_kernel)
+
         # 7. Prepare mask latent
-        
+
         if not isinstance(mask_image, torch.FloatTensor):
-            mask_image = preprocess_mask(mask_image, self.vae_scale_factor, mask_blend_kernel  = mask_blend_kernel )
+            mask_image = preprocess_mask(mask_image, self.vae_scale_factor, mask_blend_kernel=mask_blend_kernel)
         mask = mask_image.to(device=self.device, dtype=latents_img.dtype)
         mask = torch.cat([mask] * batch_size * num_images_per_prompt)
 
-        # 8. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
+        # 8. Prepare extra step kwargs.
         extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
 
         # 9. Denoising loop
@@ -635,11 +622,10 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
                 if do_classifier_free_guidance:
                     noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
                     noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
-                    
 
                 # compute the previous noisy sample x_t -> x_t-1
                 latents_img = self.scheduler.step(noise_pred, t, latents_img, **extra_step_kwargs).prev_sample
-                if t  > 1000 * (1 - inpainting_strength):
+                if t > 1000 * (1 - inpainting_strength):
                     if add_predicted_noise:
                         init_latents_proper = self.scheduler.add_noise(
                             latents_img_ori, noise_pred_uncond, torch.tensor([t])

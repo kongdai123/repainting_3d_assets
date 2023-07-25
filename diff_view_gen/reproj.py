@@ -1,36 +1,17 @@
-import sys
-
 import os
-from pytorch3d.structures import Meshes
 
-from pytorch3d.ops import interpolate_face_attributes
-
-
-# from pytorch3d.vis.plotly_vis import AxisArgs, plot_batch_individually, plot_scene
-from pytorch3d.renderer import (
-    look_at_view_transform,
-    FoVOrthographicCameras,
-    PointsRasterizationSettings,
-    PointsRenderer,
-    PulsarPointsRenderer,
-    PointsRasterizer,
-    AlphaCompositor,
-    NormWeightedCompositor,
-    FoVPerspectiveCameras,
-    RasterizationSettings, 
-    MeshRenderer, 
-    MeshRasterizer, 
-)
-from .raster_settings import * 
-from .utils import *
-
-from PIL import ImageFilter, ImageOps, Image
+import numpy as np
+import torch
 import torch.nn.functional as F
 import torchvision.transforms as transforms
+from PIL import Image
 from kornia import create_meshgrid
-import matplotlib.pyplot as plt
-DEBUG = False
-UINT16_MAX = 65525
+from pytorch3d.ops import interpolate_face_attributes
+from pytorch3d.renderer import look_at_view_transform, FoVPerspectiveCameras, MeshRasterizer
+
+from diff_view_gen.raster_settings import raster_settings_mesh_ptcloud, raster_settings_mesh
+from diff_view_gen.utils import create_dir, import_config_key
+
 
 def get_ray_directions(H, W, focal, center=None):
     """
@@ -53,13 +34,12 @@ def get_ray_directions(H, W, focal, center=None):
     return directions
 
 
-
 def render_depth_map(angle, meshes, inpaint_config, mesh_config, device):
     Z_near, Z_far = inpaint_config["znear"], inpaint_config["zfar"]
     fov = inpaint_config["fov"]
-    save_dir =create_dir(mesh_config["save_dir"])
+    save_dir = create_dir(mesh_config["save_dir"])
     dataset_dir = create_dir(f'{save_dir}/dataset')
-    
+
     ipt_depth_dir = create_dir(f'{dataset_dir}/{angle}/depth')
     depth_path = f"{ipt_depth_dir}/out_pt.npy"
     depth_path_ptc = f"{ipt_depth_dir}/out_ptc.npy"
@@ -67,12 +47,11 @@ def render_depth_map(angle, meshes, inpaint_config, mesh_config, device):
     normal_path_ptc = f"{ipt_depth_dir}/out_norm_ptc.pt"
 
     if not os.path.isfile(depth_path):
-
         elev_angles = torch.tensor([0]).to(device)
         azim_angles = torch.tensor([angle]).to(device)
-        R, T = look_at_view_transform((Z_near + Z_far)/2, elev_angles.flatten(), (azim_angles + 180).flatten())
-        cameras = FoVPerspectiveCameras(device=device, R=R, T=T, fov = fov)
-        rasterizer_mesh=MeshRasterizer(raster_settings=raster_settings_mesh_ptcloud, cameras = cameras)
+        R, T = look_at_view_transform((Z_near + Z_far) / 2, elev_angles.flatten(), (azim_angles + 180).flatten())
+        cameras = FoVPerspectiveCameras(device=device, R=R, T=T, fov=fov)
+        rasterizer_mesh = MeshRasterizer(raster_settings=raster_settings_mesh_ptcloud, cameras=cameras)
         fragments = rasterizer_mesh(meshes)
 
         vertex_normals = meshes.verts_normals_packed()  # (V, 3)
@@ -83,29 +62,23 @@ def render_depth_map(angle, meshes, inpaint_config, mesh_config, device):
             fragments.pix_to_face, fragments.bary_coords, faces_normals
         )
         pixel_normals = F.normalize(pixel_normals, p=2, dim=-1, eps=1e-6)
-        verts = meshes.verts_packed()  
+        verts = meshes.verts_packed()
         faces_verts = verts[faces]
-        points = interpolate_face_attributes(
-            fragments.pix_to_face, fragments.bary_coords, faces_verts
-        )
+        points = interpolate_face_attributes(fragments.pix_to_face, fragments.bary_coords, faces_verts)
 
         camera_position = cameras.get_camera_center()
         view_direction = camera_position - points
-        view_direction = F.normalize(view_direction, p=2, dim=-1, eps=1e-6) # [1, 2048, 2048, 1, 3]
+        view_direction = F.normalize(view_direction, p=2, dim=-1, eps=1e-6)  # [1, 2048, 2048, 1, 3]
 
-        dot = torch.sum(view_direction * pixel_normals, dim=-1) # [1, 2048, 2048, 1]
-        if DEBUG:
-            plt.imshow(dot[0].cpu().numpy())
-            plt.show()
+        dot = torch.sum(view_direction * pixel_normals, dim=-1)  # [1, 2048, 2048, 1]
         torch.save(dot[0], normal_path_ptc)
-
 
         depth_frag = fragments.zbuf[0].clone()
         depth_frag = torch.where(depth_frag == -1, Z_far * torch.ones_like(depth_frag), depth_frag)
-        depth_tensor = depth_frag[:,:, 0]
+        depth_tensor = depth_frag[:, :, 0]
         np.save(depth_path_ptc, depth_tensor.cpu().numpy())
 
-        rasterizer_mesh=MeshRasterizer(raster_settings=raster_settings_mesh, cameras = cameras)
+        rasterizer_mesh = MeshRasterizer(raster_settings=raster_settings_mesh, cameras=cameras)
         fragments = rasterizer_mesh(meshes)
 
         vertex_normals = meshes.verts_normals_packed()  # (V, 3)
@@ -115,82 +88,82 @@ def render_depth_map(angle, meshes, inpaint_config, mesh_config, device):
             fragments.pix_to_face, fragments.bary_coords, faces_normals
         )
         pixel_normals = F.normalize(pixel_normals, p=2, dim=-1, eps=1e-6)
-        verts = meshes.verts_packed()  
+        verts = meshes.verts_packed()
         faces_verts = verts[faces]
-        points = interpolate_face_attributes(
-            fragments.pix_to_face, fragments.bary_coords, faces_verts
-        )
+        points = interpolate_face_attributes(fragments.pix_to_face, fragments.bary_coords, faces_verts)
 
         camera_position = cameras.get_camera_center()
         view_direction = camera_position - points
-        view_direction = F.normalize(view_direction, p=2, dim=-1, eps=1e-6) # [1, 2048, 2048, 1, 3]
+        view_direction = F.normalize(view_direction, p=2, dim=-1, eps=1e-6)  # [1, 2048, 2048, 1, 3]
 
-        dot = torch.sum(view_direction * pixel_normals, dim=-1) # [1, 2048, 2048, 1]
+        dot = torch.sum(view_direction * pixel_normals, dim=-1)  # [1, 2048, 2048, 1]
 
         torch.save(dot[0], normal_path)
-
 
         depth_frag_img = fragments.zbuf[0].clone()
         depth_frag_img = torch.where(depth_frag_img == -1, torch.zeros_like(depth_frag_img), depth_frag_img)
 
-        depth_frag_img = depth_frag_img/Z_far
+        depth_frag_img = depth_frag_img / Z_far
 
-
-        depth_frag_img = depth_frag_img[:,:, 0].cpu().numpy() 
-        depth_frag_img = (depth_frag_img* UINT16_MAX).astype(np.uint16)
+        depth_frag_img = depth_frag_img[:, :, 0].cpu().numpy()
+        depth_frag_img = (depth_frag_img * 65525).astype(np.uint16)
         depth_frag_img = Image.fromarray(depth_frag_img)
         depth_frag_img.save(f"{ipt_depth_dir}/out.png")
 
-
         depth_frag = fragments.zbuf[0].clone()
         depth_frag = torch.where(depth_frag == -1, Z_far * torch.ones_like(depth_frag), depth_frag)
-        depth_tensor = depth_frag[:,:, 0]
+        depth_tensor = depth_frag[:, :, 0]
 
         np.save(depth_path, depth_tensor.cpu().numpy())
 
     return depth_path
 
 
-def backward_oculusion_aware_render(cur_angle, next_angle, inpaint_config, mesh_config,meshes, bg_image, angle_inc = 40, use_train = False, device = "cpu"):
+def backward_oculusion_aware_render(
+        cur_angle, next_angle, inpaint_config, mesh_config, meshes, bg_image,
+        angle_inc=40, use_train=False, device="cpu"
+):
     Z_near, Z_far = inpaint_config["znear"], inpaint_config["zfar"]
     fov = inpaint_config["fov"]
-    save_dir =create_dir(mesh_config["save_dir"])
+    save_dir = create_dir(mesh_config["save_dir"])
     dataset_dir = create_dir(f'{save_dir}/dataset')
     normal_thresh = import_config_key(inpaint_config, "normal_thresh", 0.3)
     normal_mask_val = import_config_key(inpaint_config, "normal_mask_val", 0.8)
     add_samples = import_config_key(inpaint_config, "add_samples", -1)
     
-    depth_path =  render_depth_map(next_angle, meshes, inpaint_config, mesh_config, device)
-    cur_depth_path =  render_depth_map(cur_angle, meshes, inpaint_config, mesh_config, device)
+    render_depth_map(next_angle, meshes, inpaint_config, mesh_config, device)
+    render_depth_map(cur_angle, meshes, inpaint_config, mesh_config, device)
 
     next_normal_path = f'{dataset_dir}/{next_angle}/depth/out_norm_ptc.pt'
-    next_normal = torch.load(next_normal_path)[:,:, 0]
+    next_normal = torch.load(next_normal_path)[:, :, 0]
     normal_path = f'{dataset_dir}/{cur_angle}/depth/out_norm_ptc.pt'
-    normal = torch.load(normal_path)[:,:, 0]
+    normal = torch.load(normal_path)[:, :, 0]
 
     img_path = f'{dataset_dir}/{cur_angle}/out_alpha.png'
     if use_train:
         img_path = f'{dataset_dir}/{cur_angle}/out_train.png'
-    views = 1
 
     elev_angles = torch.tensor([0]).to(device)
     azim_angles = torch.tensor([-angle_inc]).to(device)
 
-    R, T = look_at_view_transform((Z_near + Z_far)/2, elev_angles.flatten(), (azim_angles + 180).flatten())
+    R, T = look_at_view_transform((Z_near + Z_far) / 2, elev_angles.flatten(), (azim_angles + 180).flatten())
 
-    cameras = FoVPerspectiveCameras(device=device, R=R, T=T, fov = fov)
-
+    cameras = FoVPerspectiveCameras(device=device, R=R, T=T, fov=fov)
 
     def convert_depth_to_ptcloud(depth_path):
         d = np.load(depth_path)
         depth_tensor = torch.tensor(d).to(device)
-        depth_tensor = depth_tensor.reshape(depth_tensor.shape[0],depth_tensor.shape[1], 1)
-        depth_tensor = torch.where(depth_tensor == depth_tensor.max(), 100 * torch.ones_like(depth_tensor), depth_tensor )
-        H ,W = depth_tensor.shape[0:2]
-        focal_length = [ 1/np.tan(fov/2 * np.pi/180) * H/2, 1/np.tan(fov/2 * np.pi/180) * W/2]
+        depth_tensor = depth_tensor.reshape(depth_tensor.shape[0], depth_tensor.shape[1], 1)
+        depth_tensor = torch.where(
+            depth_tensor == depth_tensor.max(),
+            100 * torch.ones_like(depth_tensor),
+            depth_tensor
+        )
+        H, W = depth_tensor.shape[0:2]
+        focal_length = [1 / np.tan(fov / 2 * np.pi / 180) * H / 2, 1 / np.tan(fov / 2 * np.pi / 180) * W / 2]
         ray_directions = get_ray_directions(H, W, focal_length).to(device)
-        pt_cloud = ray_directions * depth_tensor 
-        pt_cloud[:,:,2] = pt_cloud[:,:,2]- (Z_near + Z_far)/2
+        pt_cloud = ray_directions * depth_tensor
+        pt_cloud[:, :, 2] = pt_cloud[:, :, 2] - (Z_near + Z_far) / 2
 
         return pt_cloud
 
@@ -203,7 +176,7 @@ def backward_oculusion_aware_render(cur_angle, next_angle, inpaint_config, mesh_
     d = np.load(depth_path_ptc)
     depth_tensor = torch.tensor(d).to(device)
 
-    img=Image.open(img_path)
+    img = Image.open(img_path)
     img = img.resize((depth_tensor.shape[0], depth_tensor.shape[1]), Image.LANCZOS)
     transform = transforms.Compose([
         transforms.PILToTensor()
@@ -212,96 +185,92 @@ def backward_oculusion_aware_render(cur_angle, next_angle, inpaint_config, mesh_
     img_tensor = transform(img).to(device)
 
     img_tensor = img_tensor.float()
-    img_tensor = img_tensor/img_tensor.max()
+    img_tensor = img_tensor / img_tensor.max()
 
-    surface_pts = (cameras.get_world_to_view_transform().transform_points(pt_cloud) )
-    surface_pts[:,:, 2] = surface_pts[:,:, 2] - (Z_near + Z_far)/2
-    surface_pts_masked = (surface_pts * (depth_tensor != depth_tensor.max())[:,:, None])
+    surface_pts = (cameras.get_world_to_view_transform().transform_points(pt_cloud))
+    surface_pts[:, :, 2] = surface_pts[:, :, 2] - (Z_near + Z_far) / 2
+    surface_pts_masked = surface_pts * (depth_tensor != depth_tensor.max())[:, :, None]
 
-    ndc_coords = -cameras.transform_points_ndc(pt_cloud)[:,:, :2]
-    grid = ndc_coords[None,...]
+    ndc_coords = -cameras.transform_points_ndc(pt_cloud)[:, :, :2]
+    grid = ndc_coords[None, ...]
 
-    images = torch.zeros_like(img_tensor[None,...])
-
-    input = img_tensor[None,...]
+    input = img_tensor[None, ...]
     images = torch.nn.functional.grid_sample(input, grid, mode='bilinear', padding_mode='border', align_corners=None)
-    images = images.permute(0,2,3,1)
+    images = images.permute(0, 2, 3, 1)
 
-    input = normal[None, None,...]
+    input = normal[None, None, ...]
     normals = torch.nn.functional.grid_sample(input, grid, mode='nearest', padding_mode='border', align_corners=None)
-    normals = normals[0,0]
+    normals = normals[0, 0]
 
-    input = pt_cloud2[None,].permute(0, 3,1,2)
+    input = pt_cloud2[None,].permute(0, 3, 1, 2)
     rev_depth = torch.nn.functional.grid_sample(input, grid, mode='bilinear', padding_mode='zeros', align_corners=None)
 
     if add_samples > 0:
         for j in range(add_samples):
-
-            grid = ndc_coords[None,...].clone()
+            grid = ndc_coords[None, ...].clone()
             g_cuda = torch.Generator(device='cuda')
             g_cuda.manual_seed(0)
-            grid = grid + (2 * torch.rand_like(grid) - 1) * (1/512.) 
-            input = img_tensor[None,...]
-            images_sample = torch.nn.functional.grid_sample(input, grid, mode='bilinear', padding_mode='border', align_corners=None)
+            grid = grid + (2 * torch.rand_like(grid) - 1) * (1 / 512.)
+            input = img_tensor[None, ...]
+            images_sample = torch.nn.functional.grid_sample(
+                input, grid, mode='bilinear', padding_mode='border', align_corners=None
+            )
 
-            images = images + images_sample.permute(0,2,3,1)
-            input = normal[None, None,...]
-            normals_sample = torch.nn.functional.grid_sample(input, grid, mode='nearest', padding_mode='border', align_corners=None)
-            normals = normals + normals_sample[0,0]
+            images = images + images_sample.permute(0, 2, 3, 1)
+            input = normal[None, None, ...]
+            normals_sample = torch.nn.functional.grid_sample(
+                input, grid, mode='nearest', padding_mode='border', align_corners=None
+            )
+            normals = normals + normals_sample[0, 0]
 
+        images = images / (add_samples + 1)
+        normals = normals / (add_samples + 1)
 
-        images = images/(add_samples + 1)
-        normals = normals/(add_samples + 1)
-
-    if DEBUG:
-        plt.imshow((images)[0].cpu().numpy())
-        plt.show()
-
-    rev_depth_masked = rev_depth.permute(0,2,3,1)[0] * (depth_tensor != depth_tensor.max())[:,:, None]
-
+    rev_depth_masked = rev_depth.permute(0, 2, 3, 1)[0] * (depth_tensor != depth_tensor.max())[:, :, None]
 
     pt_dist = 0.1
-    pt_dist2 = pt_dist **2
-    occlu_mask = (torch.sum((surface_pts_masked - rev_depth_masked) ** 2, axis = -1) >pt_dist2)
+    pt_dist2 = pt_dist ** 2
+    occlu_mask = (torch.sum((surface_pts_masked - rev_depth_masked) ** 2, axis=-1) > pt_dist2)
 
+    norm_mask = (normals < normal_thresh) * \
+                (next_normal > normal) * \
+                (~occlu_mask) * \
+                (depth_tensor != depth_tensor.max())
 
-    norm_mask = (normals< normal_thresh) * (next_normal > normal) * (~occlu_mask) * (depth_tensor != depth_tensor.max()) 
+    images[0, :, :, 3] = torch.where(
+        ~norm_mask,
+        images[0, :, :, 3],
+        normal_mask_val * torch.ones_like(images[0, :, :, 3])
+    )
+    images[0, :, :, 3] = torch.where(
+        (depth_tensor == depth_tensor.max()),
+        torch.zeros_like(images[0, :, :, 3]),
+        images[0, :, :, 3]
+    )
+    down = torch.nn.Upsample(size=(512, 512), mode="bilinear")
 
-    images[0, :,:, 3] = torch.where(~norm_mask, images[0, :,:, 3],normal_mask_val * torch.ones_like(images[0, :,:, 3]))
-    images[0, :,:, 3] = torch.where( (depth_tensor == depth_tensor.max()), torch.zeros_like(images[0, :,:, 3]), images[0, :,:, 3])
-    down = torch.nn.Upsample(size=(512,512), mode  = "bilinear") 
+    images[0, :, :, 3] = torch.where(occlu_mask, torch.zeros_like(images[0, :, :, 3]), images[0, :, :, 3])
 
-    images[0, :,:, 3] = torch.where(occlu_mask, torch.zeros_like(images[0, :,:, 3]), images[0, :,:, 3])
-     
-    images = down(images.permute(0,3,1,2)).permute(0,2,3,1)
-    images[0, :,:, :3] = torch.where( images[0, :,:, 3:4] == 0, bg_image,images[0, :,:, :3])
-
-    if DEBUG:
-        plt.imshow(images[0,:,:, :3].cpu().numpy())
-        plt.show()
-
-        plt.imshow(images[0,:,:, 3].cpu().numpy())
-        plt.show()
+    images = down(images.permute(0, 3, 1, 2)).permute(0, 2, 3, 1)
+    images[0, :, :, :3] = torch.where(images[0, :, :, 3:4] == 0, bg_image, images[0, :, :, :3])
 
     return images
 
 
-def render_silhouette(angle, meshes, inpaint_config, mesh_config, size = 512, device="cpu"):
+def render_silhouette(angle, meshes, inpaint_config, mesh_config, size=512, device="cpu"):
     Z_near, Z_far = inpaint_config["znear"], inpaint_config["zfar"]
     fov = inpaint_config["fov"]
     save_dir =create_dir(mesh_config["save_dir"])
-    dataset_dir = create_dir(f'{save_dir}/dataset')
+    create_dir(f'{save_dir}/dataset')
     sil_dir = create_dir(f'{save_dir}/sil')
     elev_angles = torch.tensor([0]).to(device)
     azim_angles = torch.tensor([angle]).to(device)
-    R, T = look_at_view_transform((Z_near + Z_far)/2, elev_angles.flatten(), (azim_angles + 180).flatten())
-    cameras = FoVPerspectiveCameras(device=device, R=R, T=T, fov = fov)
-    rasterizer_mesh=MeshRasterizer(raster_settings=raster_settings_mesh, cameras = cameras)
+    R, T = look_at_view_transform((Z_near + Z_far) / 2, elev_angles.flatten(), (azim_angles + 180).flatten())
+    cameras = FoVPerspectiveCameras(device=device, R=R, T=T, fov=fov)
+    rasterizer_mesh = MeshRasterizer(raster_settings=raster_settings_mesh, cameras=cameras)
     rasterizer_mesh.raster_settings.image_size = size
     fragments = rasterizer_mesh(meshes)
-    sil = (fragments.zbuf[0, :,:, 0] != -1)
+    sil = (fragments.zbuf[0, :, :, 0] != -1)
     sil = Image.fromarray((255 * sil.cpu().numpy()).astype(np.uint8))
     sil_path = f"{sil_dir}/{angle:04d}.png"
     sil.save(sil_path)
-    
-    

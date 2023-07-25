@@ -1,20 +1,19 @@
 import pytorch3d
-from pytorch3d.common.compat import meshgrid_ij
-from pytorch3d.io.mtl_io import * 
+from pytorch3d.io.mtl_io import *
 from pytorch3d.io.obj_io import *
-from pytorch3d.io.utils import _check_faces_indices, _make_tensor, _open_file, PathOrStr
+from pytorch3d.io.utils import _check_faces_indices, _open_file
 from .utils3D import * 
-from iopath.common.file_io import PathManager
+
 
 def load_obj(
-    f,
-    load_textures: bool = True,
-    create_texture_atlas: bool = False,
-    texture_atlas_size: int = 512,
-    texture_wrap: Optional[str] = "repeat",
-    device: Device = "cpu",
-    path_manager: Optional[PathManager] = None,
-    swap_face: bool = True 
+        f,
+        load_textures: bool = True,
+        create_texture_atlas: bool = False,
+        texture_atlas_size: int = 512,
+        texture_wrap: Optional[str] = "repeat",
+        device: Device = "cpu",
+        path_manager: Optional[PathManager] = None,
+        swap_face: bool = True
 ):
     data_dir = "./"
     if isinstance(f, (str, bytes, Path)):
@@ -34,17 +33,18 @@ def load_obj(
             swap_face=swap_face
         )
 
+
 def _load_obj_swap(
-    f_obj,
-    *,
-    data_dir: str,
-    load_textures: bool = True,
-    create_texture_atlas: bool = False,
-    texture_atlas_size: int = 512,
-    texture_wrap: Optional[str] = "repeat",
-    path_manager: PathManager,
-    device: Device = "cpu",
-    swap_face: bool = True
+        f_obj,
+        *,
+        data_dir: str,
+        load_textures: bool = True,
+        create_texture_atlas: bool = False,
+        texture_atlas_size: int = 512,
+        texture_wrap: Optional[str] = "repeat",
+        path_manager: PathManager,
+        device: Device = "cpu",
+        swap_face: bool = True
 ):
     """
     Load a mesh from a file-like object. See load_obj function more details.
@@ -104,7 +104,7 @@ def _load_obj_swap(
         faces_materials_idx = torch.tensor(
             faces_materials_idx, dtype=torch.int64, device=device
         )
-    
+
     texture_atlas = None
     material_colors, texture_images = pytorch3d.io.obj_io._load_materials(
         material_names,
@@ -158,14 +158,15 @@ def _load_obj_swap(
     )
     return verts, faces, aux
 
+
 def make_mesh_texture_atlas_repeat(
-    material_properties: Dict,
-    texture_images: Dict,
-    face_material_names,
-    faces_uvs: torch.Tensor,
-    verts_uvs: torch.Tensor,
-    texture_size: int,
-    texture_wrap: Optional[str],
+        material_properties: Dict,
+        texture_images: Dict,
+        face_material_names,
+        faces_uvs: torch.Tensor,
+        verts_uvs: torch.Tensor,
+        texture_size: int,
+        texture_wrap: Optional[str],
 ) -> torch.Tensor:
     F = faces_uvs.shape[0]
 
@@ -174,8 +175,8 @@ def make_mesh_texture_atlas_repeat(
     R = texture_size
     f = F
     while f > 500:
-        f = f//4
-        R = max(R//2, 1)
+        f = f // 4
+        R = max(R // 2, 1)
     atlas = torch.ones(size=(F, R, R, 3), dtype=torch.float32, device=faces_uvs.device)
     # Check for empty materials.
     if not material_properties and not texture_images:
@@ -232,7 +233,7 @@ def make_mesh_texture_atlas_repeat(
         if sz_repeated <= 16384:
             image = image.repeat(repeats, repeats, 1)
             if sz_repeated > sz_max_allowed:
-                image = image.permute(2, 0, 1)[None, ] # (1,3,h, w)
+                image = image.permute(2, 0, 1)[None,]  # (1,3,h, w)
                 image = torch.nn.functional.interpolate(
                     image, size=(sz_max_allowed, sz_max_allowed), mode='bilinear', align_corners=False, antialias=True
                 )
@@ -253,7 +254,8 @@ def make_mesh_texture_atlas_repeat(
 
     return atlas
 
+
 pytorch3d.io.mtl_io.make_mesh_texture_atlas = make_mesh_texture_atlas_repeat
 
 pytorch3d.io.obj_io.make_mesh_texture_atlas = make_mesh_texture_atlas_repeat
-pytorch3d.io.obj_io._load_obj = _load_obj_swap 
+pytorch3d.io.obj_io._load_obj = _load_obj_swap
