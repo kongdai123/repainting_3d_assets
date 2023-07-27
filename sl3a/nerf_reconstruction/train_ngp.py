@@ -19,8 +19,8 @@ import numpy as np
 import pyngp as ngp  # noqa
 from tqdm import tqdm
 
-from nerf_recon.common import repl, write_image
-from nerf_recon.utils import create_dir, import_config_key, obj
+from sl3a.nerf_reconstruction.common import repl, write_image
+from sl3a.nerf_reconstruction.utils import create_dir, import_config_key, obj
 
 
 def sync_config(nerf_config, mesh_config):

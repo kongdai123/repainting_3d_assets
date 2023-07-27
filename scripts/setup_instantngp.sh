@@ -45,14 +45,13 @@ fi
 
 if [ ! -f "${SL3A_INSTANTNGP_ROOT}/.marker.ingp.patched" ]; then
     cd dependencies/tiny-cuda-nn/include/tiny-cuda-nn/encodings/
-    patch -N -p1 -i "${SL3A_CODE_ROOT}/nerf_recon/ngp_files/grid.h.patch"
+    patch -N -p1 -i "${SL3A_CODE_ROOT}/sl3a/nerf_reconstruction/instant_ngp_patches/00_grid_h.patch"
     cd "${SL3A_INSTANTNGP_ROOT}/instant-ngp"
-    cp "${SL3A_CODE_ROOT}/nerf_recon/ngp_files/fine_network.json" "${SL3A_INSTANTNGP_ROOT}/instant-ngp/configs/nerf/"
+    cp "${SL3A_CODE_ROOT}/sl3a/nerf_reconstruction/instant_ngp_patches/fine_network.json" "${SL3A_INSTANTNGP_ROOT}/instant-ngp/configs/nerf/"
     touch "${SL3A_INSTANTNGP_ROOT}/.marker.ingp.patched"
 fi
 
-SL3A_INSTANTNGP_ARCHS=${SL3A_INSTANTNGP_ARCHS:-"60 86"}
-# SL3A_INSTANTNGP_ARCHS=${SL3A_INSTANTNGP_ARCHS:-"60 70 75 80 86 89 90"}
+SL3A_INSTANTNGP_ARCHS=${SL3A_INSTANTNGP_ARCHS:-"60 70 75 80 86 89 90"}
 
 for ARCH in ${SL3A_INSTANTNGP_ARCHS}; do
     if [ -f "${SL3A_INSTANTNGP_ROOT}/.marker.ingp.compiled.sm${ARCH}" ]; then

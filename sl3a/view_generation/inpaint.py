@@ -8,11 +8,14 @@ from PIL import ImageOps, Image
 from pytorch3d.io import load_ply
 from pytorch3d.structures import Meshes
 
-from diff_view_gen.mask_options import mask_proc_options, mask_options
-from diff_view_gen.pt3d_mesh_io import load_obj
-from diff_view_gen.reproj import render_depth_map, backward_oculusion_aware_render
-from diff_view_gen.utils import import_config_key, create_dir, listify_matrix
-from diff_view_gen.utils3D import (
+from sl3a.view_generation.mask_options import mask_proc_options, mask_options
+from sl3a.view_generation.pt3d_mesh_io import load_obj
+from sl3a.view_generation.reproj import (
+    render_depth_map,
+    backward_oculusion_aware_render,
+)
+from sl3a.view_generation.utils import import_config_key, create_dir, listify_matrix
+from sl3a.view_generation.utils3D import (
     swap_faces,
     position_verts,
     init_ngp_config,

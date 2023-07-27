@@ -3,19 +3,19 @@ import shutil
 
 import torch
 
-from diff_view_gen.depth_supervised_inpainting_pipeline import (
+from sl3a.view_generation.depth_supervised_inpainting_pipeline import (
     StableDiffusionDepth2ImgInpaintingPipeline,
 )
-from diff_view_gen.inpaint import (
+from sl3a.view_generation.inpaint import (
     initialize_meshes,
     inpaint_first_view,
     inpaint_facade,
     write_train_transforms,
     inpaint_bidirectional,
 )
-from diff_view_gen.reproj import render_silhouette
-from diff_view_gen.utils import import_config_key
-from nerf_recon.train_ngp import sync_config, train_nerf
+from sl3a.view_generation.reproj import render_silhouette
+from sl3a.view_generation.utils import import_config_key
+from sl3a.nerf_reconstruction.train_ngp import sync_config, train_nerf
 
 
 def remove_artifacts(save_dir):

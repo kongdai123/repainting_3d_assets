@@ -49,7 +49,7 @@ export TRANSFORMERS_CACHE="${SL3A_ROOT}/hfcache"
 export HF_DATASETS_CACHE="${SL3A_ROOT}/hfcache"
 export HF_HOME="${SL3A_ROOT}/hfcache"
 
-cd "${SL3A_CODE_ROOT}" && python -m main \
+cd "${SL3A_CODE_ROOT}" && python -m sl3a.main_shapenet \
     --path_instantngp "${SL3A_INSTANTNGP_ROOT}/instant-ngp" \
     --path_shapenet "${SL3A_DATASET_ROOT}" \
     --path_out "${SL3A_OUT_SHAPENET}" \
