@@ -63,7 +63,7 @@ def blend_img(img, mask_pil, kernel_size=8):
     mask = np.array(mask_pil)
     kernel = np.ones((kernel_size, kernel_size), np.uint8)
     mask_err = cv2.erode(mask, kernel, iterations=1)
-    mask_blend = (mask - mask_err)
+    mask_blend = mask - mask_err
 
     img_blend = cv2.inpaint(img_np, mask_blend, kernel_size, cv2.INPAINT_TELEA)
 

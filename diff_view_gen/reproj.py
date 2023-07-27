@@ -3,7 +3,6 @@ import os
 import numpy as np
 import torch
 import torch.nn.functional as F
-import torchvision.transforms as transforms
 from PIL import Image
 from pytorch3d.ops import interpolate_face_attributes
 from pytorch3d.renderer import look_at_view_transform, FoVPerspectiveCameras, MeshRasterizer
@@ -11,18 +10,22 @@ from pytorch3d.renderer import look_at_view_transform, FoVPerspectiveCameras, Me
 from diff_view_gen.raster_settings import raster_settings_mesh_ptcloud, raster_settings_mesh
 from diff_view_gen.utils import create_dir, import_config_key
 
-def create_meshgrid(
-    height: int,
-    width: int,
-    device = torch.device('cpu'),
-    dtype: torch.dtype = torch.float32
-):
 
+def create_meshgrid(
+        height,
+        width,
+        normalized_coordinates=True,
+        device=torch.device('cpu'),
+        dtype=torch.float32
+):
     xs = torch.linspace(0, width - 1, width, device=device, dtype=dtype)
     ys = torch.linspace(0, height - 1, height, device=device, dtype=dtype)
-    
+    if normalized_coordinates:
+        xs = (xs / (width - 1) - 0.5) * 2
+        ys = (ys / (height - 1) - 0.5) * 2
     base_grid = torch.stack(torch.meshgrid([xs, ys], indexing="ij"), dim=-1)  # WxHx2
     return base_grid.permute(1, 0, 2).unsqueeze(0)  # 1xHxWx2
+
 
 def get_ray_directions(H, W, focal, center=None):
     """
@@ -34,7 +37,7 @@ def get_ray_directions(H, W, focal, center=None):
     Outputs:
         directions: (H, W, 3), the direction of the rays in camera coordinate
     """
-    grid = create_meshgrid(H, W)[0] + 0.5
+    grid = create_meshgrid(H, W, normalized_coordinates=False)[0] + 0.5
 
     i, j = grid.unbind(-1)
     # the direction here is without +0.5 pixel centering as calibration is not so accurate
@@ -117,7 +120,7 @@ def render_depth_map(angle, meshes, inpaint_config, mesh_config, device):
         depth_frag_img = depth_frag_img / Z_far
 
         depth_frag_img = depth_frag_img[:, :, 0].cpu().numpy()
-        depth_frag_img = (depth_frag_img * 65525).astype(np.uint16)
+        depth_frag_img = (depth_frag_img * 65535).astype(np.uint16)
         depth_frag_img = Image.fromarray(depth_frag_img)
         depth_frag_img.save(f"{ipt_depth_dir}/out.png")
 
@@ -189,16 +192,13 @@ def backward_oculusion_aware_render(
 
     img = Image.open(img_path)
     img = img.resize((depth_tensor.shape[0], depth_tensor.shape[1]), Image.LANCZOS)
-    transform = transforms.Compose([
-        transforms.PILToTensor()
-    ])
 
-    img_tensor = transform(img).to(device)
-
+    img_tensor = torch.as_tensor(np.array(img, copy=True))
+    img_tensor = img_tensor.view(img.size[1], img.size[0], -1).permute(2, 0, 1).to(device)
     img_tensor = img_tensor.float()
     img_tensor = img_tensor / img_tensor.max()
 
-    surface_pts = (cameras.get_world_to_view_transform().transform_points(pt_cloud))
+    surface_pts = cameras.get_world_to_view_transform().transform_points(pt_cloud)
     surface_pts[:, :, 2] = surface_pts[:, :, 2] - (Z_near + Z_far) / 2
     surface_pts_masked = surface_pts * (depth_tensor != depth_tensor.max())[:, :, None]
 
@@ -206,15 +206,15 @@ def backward_oculusion_aware_render(
     grid = ndc_coords[None, ...]
 
     input = img_tensor[None, ...]
-    images = torch.nn.functional.grid_sample(input, grid, mode='bilinear', padding_mode='border', align_corners=None)
+    images = torch.nn.functional.grid_sample(input, grid, mode='bilinear', padding_mode='border', align_corners=False)
     images = images.permute(0, 2, 3, 1)
 
     input = normal[None, None, ...]
-    normals = torch.nn.functional.grid_sample(input, grid, mode='nearest', padding_mode='border', align_corners=None)
+    normals = torch.nn.functional.grid_sample(input, grid, mode='nearest', padding_mode='border', align_corners=False)
     normals = normals[0, 0]
 
     input = pt_cloud2[None,].permute(0, 3, 1, 2)
-    rev_depth = torch.nn.functional.grid_sample(input, grid, mode='bilinear', padding_mode='zeros', align_corners=None)
+    rev_depth = torch.nn.functional.grid_sample(input, grid, mode='bilinear', padding_mode='zeros', align_corners=False)
 
     if add_samples > 0:
         for j in range(add_samples):
@@ -224,13 +224,13 @@ def backward_oculusion_aware_render(
             grid = grid + (2 * torch.rand_like(grid) - 1) * (1 / 512.)
             input = img_tensor[None, ...]
             images_sample = torch.nn.functional.grid_sample(
-                input, grid, mode='bilinear', padding_mode='border', align_corners=None
+                input, grid, mode='bilinear', padding_mode='border', align_corners=False
             )
 
             images = images + images_sample.permute(0, 2, 3, 1)
             input = normal[None, None, ...]
             normals_sample = torch.nn.functional.grid_sample(
-                input, grid, mode='nearest', padding_mode='border', align_corners=None
+                input, grid, mode='nearest', padding_mode='border', align_corners=False
             )
             normals = normals + normals_sample[0, 0]
 
@@ -241,7 +241,7 @@ def backward_oculusion_aware_render(
 
     pt_dist = 0.1
     pt_dist2 = pt_dist ** 2
-    occlu_mask = (torch.sum((surface_pts_masked - rev_depth_masked) ** 2, axis=-1) > pt_dist2)
+    occlu_mask = torch.sum((surface_pts_masked - rev_depth_masked) ** 2, axis=-1) > pt_dist2
 
     norm_mask = (normals < normal_thresh) * \
                 (next_normal > normal) * \
@@ -281,7 +281,7 @@ def render_silhouette(angle, meshes, inpaint_config, mesh_config, size=512, devi
     rasterizer_mesh = MeshRasterizer(raster_settings=raster_settings_mesh, cameras=cameras)
     rasterizer_mesh.raster_settings.image_size = size
     fragments = rasterizer_mesh(meshes)
-    sil = (fragments.zbuf[0, :, :, 0] != -1)
+    sil = fragments.zbuf[0, :, :, 0] != -1
     sil = Image.fromarray((255 * sil.cpu().numpy()).astype(np.uint8))
     sil_path = f"{sil_dir}/{angle:04d}.png"
     sil.save(sil_path)

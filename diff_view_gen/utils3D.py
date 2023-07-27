@@ -102,7 +102,7 @@ def save_diffusion_image(image, ipt_save_dir, depth_path):
         image.save(f'{ipt_save_dir}/out_alpha.png')
         image.save(f'{ipt_save_dir}/out.png')
     else:
-        d = (np.load(depth_path))
+        d = np.load(depth_path)
         image[:, :, 3] = (d != d.max()).astype("uint8") * 255
         image = Image.fromarray(image)
         image.save(f'{ipt_save_dir}/out_alpha.png')

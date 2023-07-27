@@ -87,17 +87,17 @@ def inpaint_first_view(meshes, pipe, latents, inpaint_config, mesh_config, devic
     i = cur_angle
     ipt_save_dir = create_dir(f'{dataset_dir}/{i}')
     image.save(f'{ipt_save_dir}/out.png')
-    image = np.array(image.convert('RGBA')).copy()
+    image = np.array(image.convert('RGBA'))
 
     if np.all(image[:, :, :3] == np.zeros_like(image[:, :, :3])):
         image = 255 * np.ones_like(image)
 
-    d = (np.load(depth_path))
+    d = np.load(depth_path)
     image[:, :, 3] = (d != d.max()).astype("uint8") * 255
 
     image_masked = np.where(image[:, :, 3:4] == 255, image[:, :, :3], np.zeros_like(image[:, :, :3]))
     image_masked = image_masked.astype("float32")
-    img_color = (np.sum(image_masked, axis=(0, 1)))
+    img_color = np.sum(image_masked, axis=(0, 1))
     if (np.sum(image[:, :, 3])) > 0:
         img_color = img_color / (np.sum(image[:, :, 3]))
     else:
@@ -115,7 +115,7 @@ def inpaint_first_view(meshes, pipe, latents, inpaint_config, mesh_config, devic
                  depth_map=depth_tensor[None, :, :], negative_prompt=n_propmt, strength=1,
                  num_inference_steps=num_inference_steps, latents=latents, inpainting_strength=0).images[0]
     image.save(f'{ipt_save_dir}/out.png')
-    image = np.array(image.convert('RGBA')).copy()
+    image = np.array(image.convert('RGBA'))
 
     if np.all(image[:, :, :3] == np.zeros_like(image[:, :, :3])):
         image = np.random.randint(0, high=255, size=image.shape).astype(np.uint8)
@@ -123,7 +123,7 @@ def inpaint_first_view(meshes, pipe, latents, inpaint_config, mesh_config, devic
         image.save(f'{ipt_save_dir}/out_alpha.png')
         image.save(f'{ipt_save_dir}/out.png')
     else:
-        d = (np.load(depth_path))
+        d = np.load(depth_path)
         image[:, :, 3] = (d != d.max()).astype("uint8") * 255
         image = Image.fromarray(image)
         image.save(f'{ipt_save_dir}/out_alpha.png')
@@ -159,7 +159,6 @@ def inpaint_new_angle(
     )
 
     inc_total = inc_total + np.abs(angle_inc)
-    print(inc_total)
     ipt_input_dir = create_dir(f'{dataset_dir}/{i}')
     ipt_save_dir = create_dir(f'{dataset_dir}/{i}')
 
@@ -202,7 +201,7 @@ def inpaint_new_angle(
                  mask_blend_kernel=mask_blend_kernel, latent_blend_kernel=latent_blend_kernel).images[0]
 
     image.save(f'{ipt_save_dir}/out.png')
-    image = np.array(image.convert('RGBA')).copy()
+    image = np.array(image.convert('RGBA'))
 
     if np.all(image[:, :, :3] == np.zeros_like(image[:, :, :3])):
         image = np.random.randint(0, high=255, size=image.shape).astype(np.uint8)
@@ -210,7 +209,7 @@ def inpaint_new_angle(
         image.save(f'{ipt_save_dir}/out_alpha.png')
         image.save(f'{ipt_save_dir}/out.png')
     else:
-        d = (np.load(depth_path))
+        d = np.load(depth_path)
         image[:, :, 3] = (d != d.max()).astype("uint8") * 255
         image = Image.fromarray(image)
         image.save(f'{ipt_save_dir}/out_alpha.png')
@@ -261,8 +260,8 @@ def inpaint_bidirectional(
     render_uint8_img.save(img_path)
 
     images_combined = torch.ones_like(images[0])
-    mask_pt = (images[0, :, :, 3:4] >= 0.5)
-    mask_pt2 = (images2[0, :, :, 3:4] >= 0.5)
+    mask_pt = images[0, :, :, 3:4] >= 0.5
+    mask_pt2 = images2[0, :, :, 3:4] >= 0.5
 
     images_combined = torch.where(mask_pt, images[0], images_combined)
     images_combined = torch.where(mask_pt2, images2[0], images_combined)
@@ -286,8 +285,7 @@ def inpaint_bidirectional(
     depth_tensor = torch.where(depth_tensor == depth_tensor.max(), depth_tensor, depth_tensor)
     depth_tensor = (depth_tensor.max() - depth_tensor).float()
 
-    img_ngp_pil = Image.open(img_path_ngp)
-    img_ngp = np.array(b)
+    img_ngp = np.array(Image.open(img_path_ngp))
     img_ngp[:, :, :3] = np.where((d == d.max())[:, :, np.newaxis], bg_image_np, img_ngp[:, :, :3])
     img_ngp_pil = Image.fromarray(img_ngp[:, :, :3])
 
@@ -303,7 +301,6 @@ def inpaint_bidirectional(
     mask = mask.convert("L")  # binarize and single channel
 
     mask_blend = torch.maximum(mask_blend, torch.tensor(d == d.max()).to(device))
-    print(mask_blend.shape)
     mask_blend = Image.fromarray((255 * mask_blend.cpu().numpy()).astype("uint8"))
 
     image_pil = Image.composite(images_combined_pil, img_ngp_pil, mask_blend)  # blend
@@ -319,14 +316,14 @@ def inpaint_bidirectional(
                  mask_blend_kernel=mask_blend_kernel, latent_blend_kernel=latent_blend_kernel).images[0]
 
     image.save(f'{ipt_save_dir}/out.png')
-    image = np.array(image.convert('RGBA')).copy()
+    image = np.array(image.convert('RGBA'))
     if np.all(image[:, :, :3] == np.zeros_like(image[:, :, :3])):
         image = np.random.randint(0, high=255, size=image.shape).astype(np.uint8)
         image = Image.fromarray(image.astype("uint8"))
         image.save(f'{ipt_save_dir}/out_alpha.png')
         image.save(f'{ipt_save_dir}/out.png')
     else:
-        d = (np.load(depth_path_ngp))
+        d = np.load(depth_path_ngp)
         image[:, :, 3] = (d != d.max()).astype("uint8") * 255
         image = Image.fromarray(image)
         image.save(f'{ipt_save_dir}/out_alpha.png')
