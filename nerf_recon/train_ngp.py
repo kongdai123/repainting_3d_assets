@@ -25,14 +25,14 @@ from nerf_recon.utils import create_dir, import_config_key, obj
 
 def sync_config(nerf_config, mesh_config):
     save_dir = create_dir(mesh_config["save_dir"])
-    dataset_dir = create_dir(f'{save_dir}/dataset')
+    dataset_dir = create_dir(f"{save_dir}/dataset")
     save_name = import_config_key(mesh_config, "save_name", "")
 
     nerf_config["scene"] = f"{save_dir}"
     nerf_config["video_output"] = f"{save_dir}/{save_name}.mp4".replace(" ", "\ ")
     nerf_config["test_transforms"] = f"{dataset_dir}/train_transforms.json"
     nerf_config["save_snapshot"] = f"{save_dir}/model.msgpack"
-    nerf_config['bg_color'] = import_config_key(mesh_config, "bg_color", 0.5)
+    nerf_config["bg_color"] = import_config_key(mesh_config, "bg_color", 0.5)
     nerf_args = obj(nerf_config)
 
     return nerf_args
@@ -109,10 +109,18 @@ def train_nerf(args):
         testbed.fov = test_transforms["camera_angle_x"] * 180 / np.pi
         testbed.shall_train = False
 
-        with tqdm(list(enumerate(test_transforms["frames"])), unit="images", desc=f"Rendering test frame") as t:
+        with tqdm(
+            list(enumerate(test_transforms["frames"])),
+            unit="images",
+            desc=f"Rendering test frame",
+        ) as t:
             for i, frame in t:
-                testbed.set_nerf_camera_matrix(np.matrix(frame["transform_matrix"])[:-1, :])
-                image = testbed.render(test_transforms["h"], test_transforms["w"], spp, True)
+                testbed.set_nerf_camera_matrix(
+                    np.matrix(frame["transform_matrix"])[:-1, :]
+                )
+                image = testbed.render(
+                    test_transforms["h"], test_transforms["w"], spp, True
+                )
                 file_dir = frame["file_dir"]
                 save_dir_img = f"{args.scene}/{file_dir}"
                 os.makedirs(save_dir_img, exist_ok=True)
@@ -130,10 +138,18 @@ def train_nerf(args):
         path_video_tmp = f"{args.scene}/video_tmp"
         shutil.rmtree(path_video_tmp, ignore_errors=True)
         os.makedirs(path_video_tmp)
-        with tqdm(list(enumerate(vid_transforms["frames"])), unit="images", desc=f"Rendering test frame") as t:
+        with tqdm(
+            list(enumerate(vid_transforms["frames"])),
+            unit="images",
+            desc=f"Rendering test frame",
+        ) as t:
             for i, frame in t:
-                testbed.set_nerf_camera_matrix(np.matrix(frame["transform_matrix"])[:-1, :])
-                image = testbed.render(args.video_resolution, args.video_resolution, args.video_spp, True)
+                testbed.set_nerf_camera_matrix(
+                    np.matrix(frame["transform_matrix"])[:-1, :]
+                )
+                image = testbed.render(
+                    args.video_resolution, args.video_resolution, args.video_spp, True
+                )
                 img_path = f"{path_video_tmp}/{i:04d}.png"
                 write_image(img_path, image)
 
@@ -146,7 +162,7 @@ def train_nerf(args):
                 image.save(f"{path_video_tmp}/{i:04d}.jpg")
                 if i in [0, 45, 90, 135, 180, 225, 270, 315]:
                     spin_views_dir = create_dir(f"{args.scene}/spin_views")
-                    image = np.array(image.convert('RGBA'))
+                    image = np.array(image.convert("RGBA"))
                     image[:, :, 3] = mask
                     image = Image.fromarray(image)
                     image.save(f"{spin_views_dir}/deg{i:03d}.png")

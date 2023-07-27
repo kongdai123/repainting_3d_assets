@@ -21,7 +21,12 @@ import torch
 import PIL
 from diffusers.utils import is_accelerate_available
 from packaging import version
-from transformers import CLIPTextModel, CLIPTokenizer, DPTFeatureExtractor, DPTForDepthEstimation
+from transformers import (
+    CLIPTextModel,
+    CLIPTokenizer,
+    DPTFeatureExtractor,
+    DPTForDepthEstimation,
+)
 
 from diffusers.configuration_utils import FrozenDict
 from diffusers.models import AutoencoderKL, UNet2DConditionModel
@@ -43,6 +48,7 @@ from .mask_options import *
 
 # Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img.preprocess
 
+
 def custom_mean(block, axis):
     return np.sum(block, axis) / np.maximum(np.sum(block != 0, axis), 1)
 
@@ -57,7 +63,10 @@ def preprocess(image):
         w, h = image[0].size
         w, h = map(lambda x: x - x % 32, (w, h))  # resize to integer multiple of 32
 
-        image = [np.array(i.resize((w, h), resample=PIL_INTERPOLATION["lanczos"]))[None, :] for i in image]
+        image = [
+            np.array(i.resize((w, h), resample=PIL_INTERPOLATION["lanczos"]))[None, :]
+            for i in image
+        ]
         image = np.concatenate(image, axis=0)
         image = np.array(image).astype(np.float32) / 255.0
         image = image.transpose(0, 3, 1, 2)
@@ -71,9 +80,13 @@ def preprocess(image):
 def preprocess_mask(mask, scale_factor=8, mask_blend_kernel=-1):
     w, h = mask.size
     w, h = map(lambda x: x - x % 32, (w, h))  # resize to integer multiple of 32
-    mask = mask.resize((w // scale_factor, h // scale_factor), resample=PIL_INTERPOLATION["nearest"])
+    mask = mask.resize(
+        (w // scale_factor, h // scale_factor), resample=PIL_INTERPOLATION["nearest"]
+    )
     if mask_blend_kernel > 0:
-        mask = PIL.ImageOps.invert(blend_mask(PIL.ImageOps.invert(mask), kernel_size=mask_blend_kernel))
+        mask = PIL.ImageOps.invert(
+            blend_mask(PIL.ImageOps.invert(mask), kernel_size=mask_blend_kernel)
+        )
     mask = np.array(mask).astype(np.float32) / 255.0
     mask = np.tile(mask, (4, 1, 1))
     mask = mask[None].transpose(0, 1, 2, 3)  # what does this step do?
@@ -106,28 +119,34 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
     """
 
     def __init__(
-            self,
-            vae: AutoencoderKL,
-            text_encoder: CLIPTextModel,
-            tokenizer: CLIPTokenizer,
-            unet: UNet2DConditionModel,
-            scheduler: Union[
-                DDIMScheduler,
-                PNDMScheduler,
-                LMSDiscreteScheduler,
-                EulerDiscreteScheduler,
-                EulerAncestralDiscreteScheduler,
-                DPMSolverMultistepScheduler,
-            ],
-            depth_estimator: DPTForDepthEstimation,
-            feature_extractor: DPTFeatureExtractor,
+        self,
+        vae: AutoencoderKL,
+        text_encoder: CLIPTextModel,
+        tokenizer: CLIPTokenizer,
+        unet: UNet2DConditionModel,
+        scheduler: Union[
+            DDIMScheduler,
+            PNDMScheduler,
+            LMSDiscreteScheduler,
+            EulerDiscreteScheduler,
+            EulerAncestralDiscreteScheduler,
+            DPMSolverMultistepScheduler,
+        ],
+        depth_estimator: DPTForDepthEstimation,
+        feature_extractor: DPTFeatureExtractor,
     ):
         super().__init__()
 
-        is_unet_version_less_0_9_0 = hasattr(unet.config, "_diffusers_version") and version.parse(
+        is_unet_version_less_0_9_0 = hasattr(
+            unet.config, "_diffusers_version"
+        ) and version.parse(
             version.parse(unet.config._diffusers_version).base_version
-        ) < version.parse("0.9.0.dev0")
-        is_unet_sample_size_less_64 = hasattr(unet.config, "sample_size") and unet.config.sample_size < 64
+        ) < version.parse(
+            "0.9.0.dev0"
+        )
+        is_unet_sample_size_less_64 = (
+            hasattr(unet.config, "sample_size") and unet.config.sample_size < 64
+        )
         if is_unet_version_less_0_9_0 and is_unet_sample_size_less_64:
             deprecation_message = (
                 "The configuration file of the unet has set the default `sample_size` to smaller than"
@@ -140,7 +159,9 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
                 " checkpoint from the Hugging Face Hub, it would be very nice if you could open a Pull request for"
                 " the `unet/config.json` file"
             )
-            deprecate("sample_size<64", "1.0.0", deprecation_message, standard_warn=False)
+            deprecate(
+                "sample_size<64", "1.0.0", deprecation_message, standard_warn=False
+            )
             new_config = dict(unet.config)
             new_config["sample_size"] = 64
             unet._internal_dict = FrozenDict(new_config)
@@ -169,7 +190,12 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
 
         device = torch.device(f"cuda:{gpu_id}")
 
-        for cpu_offloaded_model in [self.unet, self.text_encoder, self.vae, self.depth_estimator]:
+        for cpu_offloaded_model in [
+            self.unet,
+            self.text_encoder,
+            self.vae,
+            self.depth_estimator,
+        ]:
             if cpu_offloaded_model is not None:
                 cpu_offload(cpu_offloaded_model, device)
 
@@ -185,15 +211,22 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
             return self.device
         for module in self.unet.modules():
             if (
-                    hasattr(module, "_hf_hook")
-                    and hasattr(module._hf_hook, "execution_device")
-                    and module._hf_hook.execution_device is not None
+                hasattr(module, "_hf_hook")
+                and hasattr(module._hf_hook, "execution_device")
+                and module._hf_hook.execution_device is not None
             ):
                 return torch.device(module._hf_hook.execution_device)
         return self.device
 
     # Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion.StableDiffusionPipeline._encode_prompt
-    def _encode_prompt(self, prompt, device, num_images_per_prompt, do_classifier_free_guidance, negative_prompt):
+    def _encode_prompt(
+        self,
+        prompt,
+        device,
+        num_images_per_prompt,
+        do_classifier_free_guidance,
+        negative_prompt,
+    ):
         r"""
         Encodes the prompt into text encoder hidden states.
 
@@ -220,16 +253,25 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
             return_tensors="pt",
         )
         text_input_ids = text_inputs.input_ids
-        untruncated_ids = self.tokenizer(prompt, padding="longest", return_tensors="pt").input_ids
+        untruncated_ids = self.tokenizer(
+            prompt, padding="longest", return_tensors="pt"
+        ).input_ids
 
-        if untruncated_ids.shape[-1] >= text_input_ids.shape[-1] and not torch.equal(text_input_ids, untruncated_ids):
-            removed_text = self.tokenizer.batch_decode(untruncated_ids[:, self.tokenizer.model_max_length - 1: -1])
+        if untruncated_ids.shape[-1] >= text_input_ids.shape[-1] and not torch.equal(
+            text_input_ids, untruncated_ids
+        ):
+            removed_text = self.tokenizer.batch_decode(
+                untruncated_ids[:, self.tokenizer.model_max_length - 1 : -1]
+            )
             logger.warning(
                 "The following part of your input was truncated because CLIP can only handle sequences up to"
                 f" {self.tokenizer.model_max_length} tokens: {removed_text}"
             )
 
-        if hasattr(self.text_encoder.config, "use_attention_mask") and self.text_encoder.config.use_attention_mask:
+        if (
+            hasattr(self.text_encoder.config, "use_attention_mask")
+            and self.text_encoder.config.use_attention_mask
+        ):
             attention_mask = text_inputs.attention_mask.to(device)
         else:
             attention_mask = None
@@ -243,7 +285,9 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
         # duplicate text embeddings for each generation per prompt, using mps friendly method
         bs_embed, seq_len, _ = text_embeddings.shape
         text_embeddings = text_embeddings.repeat(1, num_images_per_prompt, 1)
-        text_embeddings = text_embeddings.view(bs_embed * num_images_per_prompt, seq_len, -1)
+        text_embeddings = text_embeddings.view(
+            bs_embed * num_images_per_prompt, seq_len, -1
+        )
 
         # get unconditional embeddings for classifier free guidance
         if do_classifier_free_guidance:
@@ -275,7 +319,10 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
                 return_tensors="pt",
             )
 
-            if hasattr(self.text_encoder.config, "use_attention_mask") and self.text_encoder.config.use_attention_mask:
+            if (
+                hasattr(self.text_encoder.config, "use_attention_mask")
+                and self.text_encoder.config.use_attention_mask
+            ):
                 attention_mask = uncond_input.attention_mask.to(device)
             else:
                 attention_mask = None
@@ -289,7 +336,9 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
             # duplicate unconditional embeddings for each generation per prompt, using mps friendly method
             seq_len = uncond_embeddings.shape[1]
             uncond_embeddings = uncond_embeddings.repeat(1, num_images_per_prompt, 1)
-            uncond_embeddings = uncond_embeddings.view(batch_size * num_images_per_prompt, seq_len, -1)
+            uncond_embeddings = uncond_embeddings.view(
+                batch_size * num_images_per_prompt, seq_len, -1
+            )
 
             # For classifier free guidance, we need to do two forward passes.
             # Here we concatenate the unconditional and text embeddings into a single batch
@@ -301,7 +350,9 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
     # Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion.StableDiffusionPipeline.run_safety_checker
     def run_safety_checker(self, image, device, dtype):
         if self.safety_checker is not None:
-            safety_checker_input = self.feature_extractor(self.numpy_to_pil(image), return_tensors="pt").to(device)
+            safety_checker_input = self.feature_extractor(
+                self.numpy_to_pil(image), return_tensors="pt"
+            ).to(device)
             image, has_nsfw_concept = self.safety_checker(
                 images=image, clip_input=safety_checker_input.pixel_values.to(dtype)
             )
@@ -325,26 +376,35 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
         # eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
         # and should be between [0, 1]
 
-        accepts_eta = "eta" in set(inspect.signature(self.scheduler.step).parameters.keys())
+        accepts_eta = "eta" in set(
+            inspect.signature(self.scheduler.step).parameters.keys()
+        )
         extra_step_kwargs = {}
         if accepts_eta:
             extra_step_kwargs["eta"] = eta
 
         # check if the scheduler accepts generator
-        accepts_generator = "generator" in set(inspect.signature(self.scheduler.step).parameters.keys())
+        accepts_generator = "generator" in set(
+            inspect.signature(self.scheduler.step).parameters.keys()
+        )
         if accepts_generator:
             extra_step_kwargs["generator"] = generator
         return extra_step_kwargs
 
     def check_inputs(self, prompt, strength, callback_steps):
         if not isinstance(prompt, str) and not isinstance(prompt, list):
-            raise ValueError(f"`prompt` has to be of type `str` or `list` but is {type(prompt)}")
+            raise ValueError(
+                f"`prompt` has to be of type `str` or `list` but is {type(prompt)}"
+            )
 
         if strength < 0 or strength > 1:
-            raise ValueError(f"The value of strength should in [1.0, 1.0] but is {strength}")
+            raise ValueError(
+                f"The value of strength should in [1.0, 1.0] but is {strength}"
+            )
 
         if (callback_steps is None) or (
-                callback_steps is not None and (not isinstance(callback_steps, int) or callback_steps <= 0)
+            callback_steps is not None
+            and (not isinstance(callback_steps, int) or callback_steps <= 0)
         ):
             raise ValueError(
                 f"`callback_steps` has to be a positive integer but is {callback_steps} of type"
@@ -362,8 +422,19 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
         return timesteps, num_inference_steps - t_start
 
     # Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img.StableDiffusionImg2ImgPipeline.prepare_latents
-    def prepare_latents(self, image, timestep, batch_size, num_images_per_prompt, dtype, device, generator=None,
-                        latents=None, mask_img=None, latent_blend_kernel=-1):
+    def prepare_latents(
+        self,
+        image,
+        timestep,
+        batch_size,
+        num_images_per_prompt,
+        dtype,
+        device,
+        generator=None,
+        latents=None,
+        mask_img=None,
+        latent_blend_kernel=-1,
+    ):
         image = image.to(device=device, dtype=dtype)
 
         batch_size = batch_size * num_images_per_prompt
@@ -375,7 +446,8 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
 
         if isinstance(generator, list):
             init_latents = [
-                self.vae.encode(image[i: i + 1]).latent_dist.sample(generator[i]) for i in range(batch_size)
+                self.vae.encode(image[i : i + 1]).latent_dist.sample(generator[i])
+                for i in range(batch_size)
             ]
             init_latents = torch.cat(init_latents, dim=0)
         else:
@@ -386,16 +458,27 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
             init_latents = init_latents.detach().cpu().numpy()
             init_latents_min = init_latents.min()
             init_latents_max = init_latents.max()
-            init_latents = (init_latents - init_latents_min) / (init_latents_max - init_latents_min)
+            init_latents = (init_latents - init_latents_min) / (
+                init_latents_max - init_latents_min
+            )
             init_latents_uint8 = (init_latents * 255).astype(np.uint8)
             for i in range(4):
-                latents_out = blend_img(init_latents_uint8[0, i], (mask_img), kernel_size=latent_blend_kernel)
+                latents_out = blend_img(
+                    init_latents_uint8[0, i],
+                    (mask_img),
+                    kernel_size=latent_blend_kernel,
+                )
                 init_latents_uint8[0, i] = latents_out
 
             init_latents = torch.tensor(init_latents_uint8).to(dtype).to(device) / 255
-            init_latents = init_latents * (init_latents_max - init_latents_min) + init_latents_min
+            init_latents = (
+                init_latents * (init_latents_max - init_latents_min) + init_latents_min
+            )
 
-        if batch_size > init_latents.shape[0] and batch_size % init_latents.shape[0] == 0:
+        if (
+            batch_size > init_latents.shape[0]
+            and batch_size % init_latents.shape[0] == 0
+        ):
             # expand init_latents for batch_size
             deprecation_message = (
                 f"You have passed {batch_size} text prompts (`prompt`), but only {init_latents.shape[0]} initial"
@@ -403,10 +486,20 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
                 " that this behavior is deprecated and will be removed in a version 1.0.0. Please make sure to update"
                 " your script to pass as many initial images as text prompts to suppress this warning."
             )
-            deprecate("len(prompt) != len(image)", "1.0.0", deprecation_message, standard_warn=False)
+            deprecate(
+                "len(prompt) != len(image)",
+                "1.0.0",
+                deprecation_message,
+                standard_warn=False,
+            )
             additional_image_per_prompt = batch_size // init_latents.shape[0]
-            init_latents = torch.cat([init_latents] * additional_image_per_prompt, dim=0)
-        elif batch_size > init_latents.shape[0] and batch_size % init_latents.shape[0] != 0:
+            init_latents = torch.cat(
+                [init_latents] * additional_image_per_prompt, dim=0
+            )
+        elif (
+            batch_size > init_latents.shape[0]
+            and batch_size % init_latents.shape[0] != 0
+        ):
             raise ValueError(
                 f"Cannot duplicate `image` of batch size {init_latents.shape[0]} to {batch_size} text prompts."
             )
@@ -419,12 +512,16 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
             if isinstance(generator, list):
                 shape = (1,) + shape[1:]
                 noise = [
-                    torch.randn(shape, generator=generator[i], device=rand_device, dtype=dtype) for i in
-                    range(batch_size)
+                    torch.randn(
+                        shape, generator=generator[i], device=rand_device, dtype=dtype
+                    )
+                    for i in range(batch_size)
                 ]
                 noise = torch.cat(noise, dim=0).to(device)
             else:
-                noise = torch.randn(shape, generator=generator, device=rand_device, dtype=dtype).to(device)
+                noise = torch.randn(
+                    shape, generator=generator, device=rand_device, dtype=dtype
+                ).to(device)
         if latents != None:
             print("use noise latents")
             noise = latents
@@ -434,18 +531,26 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
         latents_img = init_latents
         return latents_img, latents_img_ori
 
-    def prepare_depth_map(self, image, depth_map, batch_size, do_classifier_free_guidance, dtype, device):
+    def prepare_depth_map(
+        self, image, depth_map, batch_size, do_classifier_free_guidance, dtype, device
+    ):
         if isinstance(image, PIL.Image.Image):
             image = [image]
         else:
             image = [img for img in image]
 
         if depth_map is None:
-            pixel_values = self.feature_extractor(images=image, return_tensors="pt").pixel_values
+            pixel_values = self.feature_extractor(
+                images=image, return_tensors="pt"
+            ).pixel_values
             pixel_values = pixel_values.to(device=device)
             # The DPT-Hybrid model uses batch-norm layers which are not compatible with fp16.
             # So we use `torch.autocast` here for half precision inference.
-            context_manger = torch.autocast("cuda", dtype=dtype) if device.type == "cuda" else contextlib.nullcontext()
+            context_manger = (
+                torch.autocast("cuda", dtype=dtype)
+                if device.type == "cuda"
+                else contextlib.nullcontext()
+            )
             with context_manger:
                 depth_map = self.depth_estimator(pixel_values).predicted_depth
         else:
@@ -467,32 +572,34 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
         if depth_map.shape[0] < batch_size:
             depth_map = depth_map.repeat(batch_size, 1, 1, 1)
 
-        depth_map = torch.cat([depth_map] * 2) if do_classifier_free_guidance else depth_map
+        depth_map = (
+            torch.cat([depth_map] * 2) if do_classifier_free_guidance else depth_map
+        )
         return depth_map
 
     @torch.no_grad()
     def __call__(
-            self,
-            prompt: Union[str, List[str]],
-            image: Union[torch.FloatTensor, PIL.Image.Image],
-            mask_image: Union[torch.FloatTensor, PIL.Image.Image] = None,
-            depth_map: Optional[torch.FloatTensor] = None,
-            strength: float = 0.8,
-            num_inference_steps: Optional[int] = 50,
-            guidance_scale: Optional[float] = 7.5,
-            negative_prompt: Optional[Union[str, List[str]]] = None,
-            num_images_per_prompt: Optional[int] = 1,
-            eta: Optional[float] = 0.0,
-            add_predicted_noise: Optional[bool] = False,
-            generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
-            output_type: Optional[str] = "pil",
-            return_dict: bool = True,
-            callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
-            callback_steps: Optional[int] = 1,
-            latents: Optional[torch.FloatTensor] = None,
-            inpainting_strength: Optional[float] = 1,
-            mask_blend_kernel: Optional[int] = -1,
-            latent_blend_kernel: Optional[int] = -1
+        self,
+        prompt: Union[str, List[str]],
+        image: Union[torch.FloatTensor, PIL.Image.Image],
+        mask_image: Union[torch.FloatTensor, PIL.Image.Image] = None,
+        depth_map: Optional[torch.FloatTensor] = None,
+        strength: float = 0.8,
+        num_inference_steps: Optional[int] = 50,
+        guidance_scale: Optional[float] = 7.5,
+        negative_prompt: Optional[Union[str, List[str]]] = None,
+        num_images_per_prompt: Optional[int] = 1,
+        eta: Optional[float] = 0.0,
+        add_predicted_noise: Optional[bool] = False,
+        generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
+        output_type: Optional[str] = "pil",
+        return_dict: bool = True,
+        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
+        callback_steps: Optional[int] = 1,
+        latents: Optional[torch.FloatTensor] = None,
+        inpainting_strength: Optional[float] = 1,
+        mask_blend_kernel: Optional[int] = -1,
+        latent_blend_kernel: Optional[int] = -1,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -564,7 +671,11 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
 
         # 3. Encode input prompt
         text_embeddings = self._encode_prompt(
-            prompt, device, num_images_per_prompt, do_classifier_free_guidance, negative_prompt
+            prompt,
+            device,
+            num_images_per_prompt,
+            do_classifier_free_guidance,
+            negative_prompt,
         )
 
         # 4. Preprocess image
@@ -582,24 +693,44 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
 
         # 6. set timesteps
         self.scheduler.set_timesteps(num_inference_steps, device=device)
-        timesteps, num_inference_steps = self.get_timesteps(num_inference_steps, strength, device)
+        timesteps, num_inference_steps = self.get_timesteps(
+            num_inference_steps, strength, device
+        )
         latent_timestep = timesteps[:1].repeat(batch_size * num_images_per_prompt)
 
         # 7. Prepare latent variables
         mask_img = None
         if not isinstance(mask_image, torch.FloatTensor) and latent_blend_kernel > 0:
-            mask_img = preprocess_mask(mask_image, self.vae_scale_factor, mask_blend_kernel=-1)
-            mask_img = PIL.Image.fromarray(
-                (mask_img[0, 0].cpu().numpy() * 255).astype(np.uint8)).convert("1").convert("L")
+            mask_img = preprocess_mask(
+                mask_image, self.vae_scale_factor, mask_blend_kernel=-1
+            )
+            mask_img = (
+                PIL.Image.fromarray(
+                    (mask_img[0, 0].cpu().numpy() * 255).astype(np.uint8)
+                )
+                .convert("1")
+                .convert("L")
+            )
 
         latents_img, latents_img_ori = self.prepare_latents(
-            image, latent_timestep, batch_size, num_images_per_prompt, text_embeddings.dtype, device, generator,
-            latents, mask_img=mask_img, latent_blend_kernel=latent_blend_kernel)
+            image,
+            latent_timestep,
+            batch_size,
+            num_images_per_prompt,
+            text_embeddings.dtype,
+            device,
+            generator,
+            latents,
+            mask_img=mask_img,
+            latent_blend_kernel=latent_blend_kernel,
+        )
 
         # 7. Prepare mask latent
 
         if not isinstance(mask_image, torch.FloatTensor):
-            mask_image = preprocess_mask(mask_image, self.vae_scale_factor, mask_blend_kernel=mask_blend_kernel)
+            mask_image = preprocess_mask(
+                mask_image, self.vae_scale_factor, mask_blend_kernel=mask_blend_kernel
+            )
         mask = mask_image.to(device=self.device, dtype=latents_img.dtype)
         mask = torch.cat([mask] * batch_size * num_images_per_prompt)
 
@@ -611,32 +742,50 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
         with self.progress_bar(total=num_inference_steps) as progress_bar:
             for i, t in enumerate(timesteps):
                 # expand the latents if we are doing classifier free guidance
-                latent_model_input = torch.cat([latents_img] * 2) if do_classifier_free_guidance else latents_img
-                latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
+                latent_model_input = (
+                    torch.cat([latents_img] * 2)
+                    if do_classifier_free_guidance
+                    else latents_img
+                )
+                latent_model_input = self.scheduler.scale_model_input(
+                    latent_model_input, t
+                )
                 latent_model_input = torch.cat([latent_model_input, depth_mask], dim=1)
 
                 # predict the noise residual
-                noise_pred = self.unet(latent_model_input, t, encoder_hidden_states=text_embeddings).sample
+                noise_pred = self.unet(
+                    latent_model_input, t, encoder_hidden_states=text_embeddings
+                ).sample
 
                 # perform guidance
                 if do_classifier_free_guidance:
                     noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                    noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
+                    noise_pred = noise_pred_uncond + guidance_scale * (
+                        noise_pred_text - noise_pred_uncond
+                    )
 
                 # compute the previous noisy sample x_t -> x_t-1
-                latents_img = self.scheduler.step(noise_pred, t, latents_img, **extra_step_kwargs).prev_sample
+                latents_img = self.scheduler.step(
+                    noise_pred, t, latents_img, **extra_step_kwargs
+                ).prev_sample
                 if t > 1000 * (1 - inpainting_strength):
                     if add_predicted_noise:
                         init_latents_proper = self.scheduler.add_noise(
                             latents_img_ori, noise_pred_uncond, torch.tensor([t])
                         )
                     else:
-                        init_latents_proper = self.scheduler.add_noise(latents_img_ori, latents, torch.tensor([t]))
+                        init_latents_proper = self.scheduler.add_noise(
+                            latents_img_ori, latents, torch.tensor([t])
+                        )
 
-                    latents_img = (init_latents_proper * mask) + (latents_img * (1 - mask))
+                    latents_img = (init_latents_proper * mask) + (
+                        latents_img * (1 - mask)
+                    )
 
                 # call the callback, if provided
-                if i == len(timesteps) - 1 or ((i + 1) > num_warmup_steps and (i + 1) % self.scheduler.order == 0):
+                if i == len(timesteps) - 1 or (
+                    (i + 1) > num_warmup_steps and (i + 1) % self.scheduler.order == 0
+                ):
                     progress_bar.update()
                     if callback is not None and i % callback_steps == 0:
                         callback(i, t, latents_img)

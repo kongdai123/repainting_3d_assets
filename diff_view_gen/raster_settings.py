@@ -7,7 +7,7 @@ raster_settings_mesh = RasterizationSettings(
     faces_per_pixel=1,
     perspective_correct=True,
     bin_size=-1,
-    cull_backfaces=True
+    cull_backfaces=True,
 )
 
 raster_settings_mesh_ptcloud = RasterizationSettings(
@@ -16,5 +16,5 @@ raster_settings_mesh_ptcloud = RasterizationSettings(
     faces_per_pixel=1,
     perspective_correct=True,
     bin_size=-1,
-    cull_backfaces=True
+    cull_backfaces=True,
 )

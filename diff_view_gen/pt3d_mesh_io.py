@@ -2,18 +2,18 @@ import pytorch3d
 from pytorch3d.io.mtl_io import *
 from pytorch3d.io.obj_io import *
 from pytorch3d.io.utils import _check_faces_indices, _open_file
-from .utils3D import * 
+from .utils3D import *
 
 
 def load_obj(
-        f,
-        load_textures: bool = True,
-        create_texture_atlas: bool = False,
-        texture_atlas_size: int = 512,
-        texture_wrap: Optional[str] = "repeat",
-        device: Device = "cpu",
-        path_manager: Optional[PathManager] = None,
-        swap_face: bool = True
+    f,
+    load_textures: bool = True,
+    create_texture_atlas: bool = False,
+    texture_atlas_size: int = 512,
+    texture_wrap: Optional[str] = "repeat",
+    device: Device = "cpu",
+    path_manager: Optional[PathManager] = None,
+    swap_face: bool = True,
 ):
     data_dir = "./"
     if isinstance(f, (str, bytes, Path)):
@@ -30,21 +30,21 @@ def load_obj(
             texture_wrap=texture_wrap,
             path_manager=path_manager,
             device=device,
-            swap_face=swap_face
+            swap_face=swap_face,
         )
 
 
 def _load_obj_swap(
-        f_obj,
-        *,
-        data_dir: str,
-        load_textures: bool = True,
-        create_texture_atlas: bool = False,
-        texture_atlas_size: int = 512,
-        texture_wrap: Optional[str] = "repeat",
-        path_manager: PathManager,
-        device: Device = "cpu",
-        swap_face: bool = True
+    f_obj,
+    *,
+    data_dir: str,
+    load_textures: bool = True,
+    create_texture_atlas: bool = False,
+    texture_atlas_size: int = 512,
+    texture_wrap: Optional[str] = "repeat",
+    path_manager: PathManager,
+    device: Device = "cpu",
+    swap_face: bool = True
 ):
     """
     Load a mesh from a file-like object. See load_obj function more details.
@@ -68,7 +68,9 @@ def _load_obj_swap(
         mtl_path,
     ) = pytorch3d.io.obj_io._parse_obj(f_obj, data_dir)
 
-    verts = pytorch3d.io.obj_io._make_tensor(verts, cols=3, dtype=torch.float32, device=device)  # (V, 3)
+    verts = pytorch3d.io.obj_io._make_tensor(
+        verts, cols=3, dtype=torch.float32, device=device
+    )  # (V, 3)
     normals = pytorch3d.io.obj_io._make_tensor(
         normals,
         cols=3,
@@ -85,20 +87,23 @@ def _load_obj_swap(
     faces_verts_idx = pytorch3d.io.obj_io._format_faces_indices(
         faces_verts_idx, verts.shape[0], device=device
     )
-    if (swap_face): faces_verts_idx = swap_faces(faces_verts_idx)
+    if swap_face:
+        faces_verts_idx = swap_faces(faces_verts_idx)
 
     # Repeat for normals and textures if present.
     if len(faces_normals_idx):
         faces_normals_idx = pytorch3d.io.obj_io._format_faces_indices(
             faces_normals_idx, normals.shape[0], device=device, pad_value=-1
         )
-        if (swap_face): faces_normals_idx = swap_faces(faces_normals_idx)
+        if swap_face:
+            faces_normals_idx = swap_faces(faces_normals_idx)
 
     if len(faces_textures_idx):
         faces_textures_idx = pytorch3d.io.obj_io._format_faces_indices(
             faces_textures_idx, verts_uvs.shape[0], device=device, pad_value=-1
         )
-        if (swap_face): faces_textures_idx = swap_faces(faces_textures_idx)
+        if swap_face:
+            faces_textures_idx = swap_faces(faces_textures_idx)
 
     if len(faces_materials_idx):
         faces_materials_idx = torch.tensor(
@@ -160,13 +165,13 @@ def _load_obj_swap(
 
 
 def make_mesh_texture_atlas_repeat(
-        material_properties: Dict,
-        texture_images: Dict,
-        face_material_names,
-        faces_uvs: torch.Tensor,
-        verts_uvs: torch.Tensor,
-        texture_size: int,
-        texture_wrap: Optional[str],
+    material_properties: Dict,
+    texture_images: Dict,
+    face_material_names,
+    faces_uvs: torch.Tensor,
+    verts_uvs: torch.Tensor,
+    texture_size: int,
+    texture_wrap: Optional[str],
 ) -> torch.Tensor:
     F = faces_uvs.shape[0]
 
@@ -224,7 +229,10 @@ def make_mesh_texture_atlas_repeat(
 
         # Find the subset of faces which use this texture with this texture image
         uvs_subset = faces_verts_uvs[faces_material_ind, :, :]
-        repeats = max(1, (torch.ceil(uvs_subset.max()) - torch.floor(uvs_subset.min())).int().item())
+        repeats = max(
+            1,
+            (torch.ceil(uvs_subset.max()) - torch.floor(uvs_subset.min())).int().item(),
+        )
         uvs_subset = (uvs_subset - torch.floor(uvs_subset.min())) / repeats
         sz_max_allowed = 512
         sz_img = max(image.shape[0], image.shape[1])
@@ -235,7 +243,11 @@ def make_mesh_texture_atlas_repeat(
             if sz_repeated > sz_max_allowed:
                 image = image.permute(2, 0, 1)[None,]  # (1,3,h, w)
                 image = torch.nn.functional.interpolate(
-                    image, size=(sz_max_allowed, sz_max_allowed), mode='bilinear', align_corners=False, antialias=True
+                    image,
+                    size=(sz_max_allowed, sz_max_allowed),
+                    mode="bilinear",
+                    align_corners=False,
+                    antialias=True,
                 )
                 image = image[0].permute(1, 2, 0)
         elif sz_img_downsampled <= 1:
@@ -244,8 +256,11 @@ def make_mesh_texture_atlas_repeat(
         else:
             image = image.permute(2, 0, 1)[None,]  # (1,3,h, w)
             image = torch.nn.functional.interpolate(
-                image, size=(sz_img_downsampled, sz_img_downsampled), mode='bilinear',
-                align_corners=False, antialias=True
+                image,
+                size=(sz_img_downsampled, sz_img_downsampled),
+                mode="bilinear",
+                align_corners=False,
+                antialias=True,
             )
             image = image[0].permute(1, 2, 0)
             image = image.repeat(repeats, repeats, 1)

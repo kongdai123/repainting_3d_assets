@@ -49,23 +49,19 @@ def init_ngp_config(config):
         "integer_depth_scale": config["zfar"] / 65535,
         "z_near": config["znear"],
         "z_far": config["zfar"],
-        "frames": []
+        "frames": [],
     }
 
 
 def convert_pt_NGP_transform(elev_angles, azim_angles, r=3.5):
-    R_save, T_save = look_at_view_transform(r, elev_angles.flatten(), -azim_angles.flatten() + 180)
+    R_save, T_save = look_at_view_transform(
+        r, elev_angles.flatten(), -azim_angles.flatten() + 180
+    )
 
     views = R_save.shape[0]
     matrix_world = torch.zeros((views, 4, 4), device=R_save.device)
     matrix_axis_transform = torch.tensor(
-        [
-            [1, 0, 0, 0],
-            [0, 0, -1, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 1]
-        ],
-        device=R_save.device
+        [[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]], device=R_save.device
     ).to(torch.float)
 
     for i in range(views):
@@ -82,27 +78,29 @@ def write_outframe(next_angle, ipt_save_dir, transforms_config_out, save_dir):
         "file_dir": f"./dataset/{next_angle}/",
         "file_path": f"./dataset/{next_angle}/out_alpha.png",
         "depth_path": f"./dataset/{next_angle}/depth/out.png",
-        "sharpness": sharpness(f'{ipt_save_dir}/out.png'),
-        "transform_matrix": listify_matrix(convert_pt_NGP_transform(torch.tensor([0]), torch.tensor([next_angle])))[0]
+        "sharpness": sharpness(f"{ipt_save_dir}/out.png"),
+        "transform_matrix": listify_matrix(
+            convert_pt_NGP_transform(torch.tensor([0]), torch.tensor([next_angle]))
+        )[0],
     }
 
     transforms_config_out["frames"].append(outframe)
-    with open(f'{save_dir}/transforms.json', 'w') as out_file:
+    with open(f"{save_dir}/transforms.json", "w") as out_file:
         json.dump(transforms_config_out, out_file, indent=4)
     return transforms_config_out
 
 
 def save_diffusion_image(image, ipt_save_dir, depth_path):
-    image.save(f'{ipt_save_dir}/out.png')
-    image = np.array(image.convert('RGBA'))
+    image.save(f"{ipt_save_dir}/out.png")
+    image = np.array(image.convert("RGBA"))
 
     if np.all(image[:, :, :3] == np.zeros_like(image[:, :, :3])):
         image = np.random.randint(0, high=255, size=image.shape).astype(np.uint8)
         image = Image.fromarray(image.astype("uint8"))
-        image.save(f'{ipt_save_dir}/out_alpha.png')
-        image.save(f'{ipt_save_dir}/out.png')
+        image.save(f"{ipt_save_dir}/out_alpha.png")
+        image.save(f"{ipt_save_dir}/out.png")
     else:
         d = np.load(depth_path)
         image[:, :, 3] = (d != d.max()).astype("uint8") * 255
         image = Image.fromarray(image)
-        image.save(f'{ipt_save_dir}/out_alpha.png')
+        image.save(f"{ipt_save_dir}/out_alpha.png")

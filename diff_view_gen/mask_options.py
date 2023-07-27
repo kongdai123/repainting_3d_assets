@@ -6,7 +6,7 @@ from PIL import Image
 
 def original_mask(img, kernel_size=5):
     if len(img.shape) == 3:
-        mask = (img[:, :, 3].cpu().numpy() >= 0.099)
+        mask = img[:, :, 3].cpu().numpy() >= 0.099
         mask_uint8 = mask.astype(np.uint8) * 255
     else:
         mask_uint8 = img
@@ -79,5 +79,7 @@ def blend_mask(mask, kernel_size=8):
     mask_cv2_er = ((np.array(mask) != 0) * 255).astype(np.uint8)
     kernel = np.ones((kernel_size, kernel_size), np.uint8)
     mask_cv2_er = cv2.erode(mask_cv2_er, kernel, iterations=1)
-    mask_out = cv2.inpaint(mask_cv2, mask_cv2_er - mask_cv2_bi, kernel_size, cv2.INPAINT_TELEA)
+    mask_out = cv2.inpaint(
+        mask_cv2, mask_cv2_er - mask_cv2_bi, kernel_size, cv2.INPAINT_TELEA
+    )
     return Image.fromarray(mask_out)

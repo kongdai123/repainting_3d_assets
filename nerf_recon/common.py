@@ -20,20 +20,22 @@ import torch
 
 def find_instantngp_binaries(path_instantngp, verbose=True):
     if not os.path.isdir(path_instantngp):
-        raise RuntimeError(f'{path_instantngp=} is not a directory')
+        raise RuntimeError(f"{path_instantngp=} is not a directory")
 
     entries = os.listdir(path_instantngp)
 
     build_dirs = {
-        int(e[len('build_sm'):]): os.path.join(path_instantngp, e)
+        int(e[len("build_sm") :]): os.path.join(path_instantngp, e)
         for e in entries
         if os.path.isdir(os.path.join(path_instantngp, e)) and e.startswith("build_sm")
     }
 
     if len(build_dirs) == 0:
-        raise RuntimeError(f'{path_instantngp=} does not contain any build directories')
+        raise RuntimeError(f"{path_instantngp=} does not contain any build directories")
 
-    CUDA_DEFAULT_DEVICE_COMPUTE_CAPABILITY = int(''.join([str(a) for a in torch.cuda.get_device_capability()]))
+    CUDA_DEFAULT_DEVICE_COMPUTE_CAPABILITY = int(
+        "".join([str(a) for a in torch.cuda.get_device_capability()])
+    )
 
     resolved_version = None
     for k in sorted(build_dirs.keys(), reverse=True):
@@ -48,8 +50,8 @@ def find_instantngp_binaries(path_instantngp, verbose=True):
 
     if verbose:
         print(
-            f'Found instant-ngp build {resolved_version} for the detected CUDA SM '
-            f'{CUDA_DEFAULT_DEVICE_COMPUTE_CAPABILITY}'
+            f"Found instant-ngp build {resolved_version} for the detected CUDA SM "
+            f"{CUDA_DEFAULT_DEVICE_COMPUTE_CAPABILITY}"
         )
 
     out = build_dirs[resolved_version]
@@ -62,7 +64,9 @@ def add_instantngp_sys_path(path_instantngp, verbose=True):
 
 
 def repl(testbed):
-    print("-------------------\npress Ctrl-Z to return to gui\n---------------------------")
+    print(
+        "-------------------\npress Ctrl-Z to return to gui\n---------------------------"
+    )
     code.InteractiveConsole(locals=locals()).interact()
     print("------- returning to gui...")
 
@@ -87,7 +91,9 @@ def linear_to_srgb(img):
 def write_image(file, img, quality=95):
     if os.path.splitext(file)[1] == ".bin":
         if img.shape[2] < 4:
-            img = np.dstack((img, np.ones([img.shape[0], img.shape[1], 4 - img.shape[2]])))
+            img = np.dstack(
+                (img, np.ones([img.shape[0], img.shape[1], 4 - img.shape[2]]))
+            )
         with open(file, "wb") as f:
             f.write(struct.pack("ii", img.shape[0], img.shape[1]))
             f.write(img.astype(np.float16).tobytes())
@@ -96,7 +102,10 @@ def write_image(file, img, quality=95):
             img = np.copy(img)
             # Unmultiply alpha
             img[..., 0:3] = np.divide(
-                img[..., 0:3], img[..., 3:4], out=np.zeros_like(img[..., 0:3]), where=img[..., 3:4] != 0
+                img[..., 0:3],
+                img[..., 3:4],
+                out=np.zeros_like(img[..., 0:3]),
+                where=img[..., 3:4] != 0,
             )
             img[..., 0:3] = linear_to_srgb(img[..., 0:3])
         else:
