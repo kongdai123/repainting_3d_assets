@@ -46,6 +46,7 @@ fi
 if [ ! -f "${SL3A_INSTANTNGP_ROOT}/.marker.ingp.patched" ]; then
     cd dependencies/tiny-cuda-nn/include/tiny-cuda-nn/encodings/
     patch -N -p1 -i "${SL3A_CODE_ROOT}/nerf_recon/ngp_files/grid.h.patch"
+    cd "${SL3A_INSTANTNGP_ROOT}/instant-ngp"
     cp "${SL3A_CODE_ROOT}/nerf_recon/ngp_files/fine_network.json" "${SL3A_INSTANTNGP_ROOT}/instant-ngp/configs/nerf/"
     touch "${SL3A_INSTANTNGP_ROOT}/.marker.ingp.patched"
 fi
