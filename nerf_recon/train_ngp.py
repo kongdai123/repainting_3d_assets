@@ -146,7 +146,7 @@ def train_nerf(args):
                 image.save(f"{path_video_tmp}/{i:04d}.jpg")
                 if i in [0, 45, 90, 135, 180, 225, 270, 315]:
                     spin_views_dir = create_dir(f"{args.scene}/spin_views")
-                    image = np.asarray(image.convert('RGBA')).copy()
+                    image = np.array(image.convert('RGBA')).copy()
                     image[:, :, 3] = mask
                     image = Image.fromarray(image)
                     image.save(f"{spin_views_dir}/deg{i:03d}.png")

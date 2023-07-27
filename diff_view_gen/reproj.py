@@ -5,13 +5,24 @@ import torch
 import torch.nn.functional as F
 import torchvision.transforms as transforms
 from PIL import Image
-from kornia import create_meshgrid
 from pytorch3d.ops import interpolate_face_attributes
 from pytorch3d.renderer import look_at_view_transform, FoVPerspectiveCameras, MeshRasterizer
 
 from diff_view_gen.raster_settings import raster_settings_mesh_ptcloud, raster_settings_mesh
 from diff_view_gen.utils import create_dir, import_config_key
 
+def create_meshgrid(
+    height: int,
+    width: int,
+    device = torch.device('cpu'),
+    dtype: torch.dtype = torch.float32
+):
+
+    xs = torch.linspace(0, width - 1, width, device=device, dtype=dtype)
+    ys = torch.linspace(0, height - 1, height, device=device, dtype=dtype)
+    
+    base_grid = torch.stack(torch.meshgrid([xs, ys], indexing="ij"), dim=-1)  # WxHx2
+    return base_grid.permute(1, 0, 2).unsqueeze(0)  # 1xHxWx2
 
 def get_ray_directions(H, W, focal, center=None):
     """

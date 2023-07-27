@@ -13,7 +13,7 @@ import os
 import struct
 import sys
 
-import imageio
+import PIL.Image as Image
 import numpy as np
 import torch
 
@@ -67,16 +67,16 @@ def repl(testbed):
     print("------- returning to gui...")
 
 
-def write_image_imageio(img_file, img, quality):
+def write_image_PIL(img_file, img, quality):
     img = (np.clip(img, 0.0, 1.0) * 255.0 + 0.5).astype(np.uint8)
+    img_PIL = Image.fromarray(img)
     kwargs = {}
     if os.path.splitext(img_file)[1].lower() in [".jpg", ".jpeg"]:
         if img.ndim >= 3 and img.shape[2] > 3:
             img = img[:, :, :3]
         kwargs["quality"] = quality
         kwargs["subsampling"] = 0
-    imageio.imwrite(img_file, img, **kwargs)
-
+    img_PIL.save(img_file, **kwargs)
 
 def linear_to_srgb(img):
     limit = 0.0031308
@@ -100,4 +100,4 @@ def write_image(file, img, quality=95):
             img[..., 0:3] = linear_to_srgb(img[..., 0:3])
         else:
             img = linear_to_srgb(img)
-        write_image_imageio(file, img, quality)
+        write_image_PIL(file, img, quality)

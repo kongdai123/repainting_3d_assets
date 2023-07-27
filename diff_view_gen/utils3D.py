@@ -94,7 +94,7 @@ def write_outframe(next_angle, ipt_save_dir, transforms_config_out, save_dir):
 
 def save_diffusion_image(image, ipt_save_dir, depth_path):
     image.save(f'{ipt_save_dir}/out.png')
-    image = np.asarray(image.convert('RGBA'))
+    image = np.array(image.convert('RGBA'))
 
     if np.all(image[:, :, :3] == np.zeros_like(image[:, :, :3])):
         image = np.random.randint(0, high=255, size=image.shape).astype(np.uint8)

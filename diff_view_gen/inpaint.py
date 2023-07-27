@@ -2,7 +2,6 @@ import copy
 import json
 
 import cv2
-import imageio
 import numpy as np
 import torch
 from PIL import ImageOps, Image
@@ -88,7 +87,7 @@ def inpaint_first_view(meshes, pipe, latents, inpaint_config, mesh_config, devic
     i = cur_angle
     ipt_save_dir = create_dir(f'{dataset_dir}/{i}')
     image.save(f'{ipt_save_dir}/out.png')
-    image = np.asarray(image.convert('RGBA')).copy()
+    image = np.array(image.convert('RGBA')).copy()
 
     if np.all(image[:, :, :3] == np.zeros_like(image[:, :, :3])):
         image = 255 * np.ones_like(image)
@@ -116,7 +115,7 @@ def inpaint_first_view(meshes, pipe, latents, inpaint_config, mesh_config, devic
                  depth_map=depth_tensor[None, :, :], negative_prompt=n_propmt, strength=1,
                  num_inference_steps=num_inference_steps, latents=latents, inpainting_strength=0).images[0]
     image.save(f'{ipt_save_dir}/out.png')
-    image = np.asarray(image.convert('RGBA')).copy()
+    image = np.array(image.convert('RGBA')).copy()
 
     if np.all(image[:, :, :3] == np.zeros_like(image[:, :, :3])):
         image = np.random.randint(0, high=255, size=image.shape).astype(np.uint8)
@@ -203,7 +202,7 @@ def inpaint_new_angle(
                  mask_blend_kernel=mask_blend_kernel, latent_blend_kernel=latent_blend_kernel).images[0]
 
     image.save(f'{ipt_save_dir}/out.png')
-    image = np.asarray(image.convert('RGBA')).copy()
+    image = np.array(image.convert('RGBA')).copy()
 
     if np.all(image[:, :, :3] == np.zeros_like(image[:, :, :3])):
         image = np.random.randint(0, high=255, size=image.shape).astype(np.uint8)
@@ -287,7 +286,8 @@ def inpaint_bidirectional(
     depth_tensor = torch.where(depth_tensor == depth_tensor.max(), depth_tensor, depth_tensor)
     depth_tensor = (depth_tensor.max() - depth_tensor).float()
 
-    img_ngp = imageio.imread(img_path_ngp)
+    img_ngp_pil = Image.open(img_path_ngp)
+    img_ngp = np.array(b)
     img_ngp[:, :, :3] = np.where((d == d.max())[:, :, np.newaxis], bg_image_np, img_ngp[:, :, :3])
     img_ngp_pil = Image.fromarray(img_ngp[:, :, :3])
 
@@ -296,7 +296,7 @@ def inpaint_bidirectional(
 
     mask_pil = Image.fromarray((255 * mask_combined.cpu().numpy()).astype("uint8"))
 
-    mask_uint8 = np.asarray(mask_pil)
+    mask_uint8 = np.array(mask_pil)
 
     mask = mask_proc_options[mask_option](mask_uint8, kernel_size=5)
     mask = Image.fromarray(mask)
@@ -319,7 +319,7 @@ def inpaint_bidirectional(
                  mask_blend_kernel=mask_blend_kernel, latent_blend_kernel=latent_blend_kernel).images[0]
 
     image.save(f'{ipt_save_dir}/out.png')
-    image = np.asarray(image.convert('RGBA')).copy()
+    image = np.array(image.convert('RGBA')).copy()
     if np.all(image[:, :, :3] == np.zeros_like(image[:, :, :3])):
         image = np.random.randint(0, high=255, size=image.shape).astype(np.uint8)
         image = Image.fromarray(image.astype("uint8"))

@@ -53,14 +53,14 @@ def inpaint_opencv(image_pil, mask_pil):
 
 def blend_img(img, mask_pil, kernel_size=8):
     if isinstance(img, Image.Image):
-        img_np = np.asarray(img)
+        img_np = np.array(img)
     else:
         img_np = img
 
     if len(img_np.shape) == 3 and img_np.shape[2] == 3:
         img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
 
-    mask = np.asarray(mask_pil)
+    mask = np.array(mask_pil)
     kernel = np.ones((kernel_size, kernel_size), np.uint8)
     mask_err = cv2.erode(mask, kernel, iterations=1)
     mask_blend = (mask - mask_err)
