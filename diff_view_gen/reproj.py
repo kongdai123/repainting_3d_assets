@@ -34,7 +34,7 @@ def get_ray_directions(H, W, focal, center=None):
     Outputs:
         directions: (H, W, 3), the direction of the rays in camera coordinate
     """
-    grid = create_meshgrid(H, W, normalized_coordinates=False)[0] + 0.5
+    grid = create_meshgrid(H, W)[0] + 0.5
 
     i, j = grid.unbind(-1)
     # the direction here is without +0.5 pixel centering as calibration is not so accurate
