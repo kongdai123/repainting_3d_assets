@@ -83,7 +83,7 @@ class ShapeNetDataset:
             "save_name": save_name,
             "seed_latents": seed_latents,
             "color": color,
-            "trans_mat": (trans_mat),
+            "trans_mat": trans_mat,
         }
 
         return config

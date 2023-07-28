@@ -19,7 +19,4 @@ def create_dir(dir_name):
 
 
 def import_config_key(config, key, default=""):
-    if key in config:
-        return config[key]
-    else:
-        return default
+    return config.get(key, default)

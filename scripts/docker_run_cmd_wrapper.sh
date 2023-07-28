@@ -4,10 +4,10 @@ set -x
 
 DOCKER=""
 
-if command -v docker &> /dev/null; then
-    DOCKER="docker"
-elif command -v nvidia-docker &> /dev/null; then
+if command -v nvidia-docker &> /dev/null; then
     DOCKER="nvidia-docker"
+elif command -v docker &> /dev/null; then
+    DOCKER="docker"
 elif command -v podman &> /dev/null; then
     DOCKER="podman"
 else

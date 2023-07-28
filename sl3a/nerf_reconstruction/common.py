@@ -60,7 +60,8 @@ def find_instantngp_binaries(path_instantngp, verbose=True):
 
 def add_instantngp_sys_path(path_instantngp, verbose=True):
     path = find_instantngp_binaries(path_instantngp, verbose=verbose)
-    sys.path.append(path)
+    if path not in sys.path:
+        sys.path.append(path)
 
 
 def repl(testbed):

@@ -42,7 +42,7 @@ def view_dep_prompt(prompt, angle, color=""):
 
 def initialize_meshes(inpaint_config, mesh_config, device):
     swap_face = import_config_key(inpaint_config, "swap_face", False)
-    trans_mat = import_config_key(mesh_config, "trans_mat", torch.tensor([]))
+    trans_mat = import_config_key(mesh_config, "trans_mat", torch.eye(3))
     mesh_path = import_config_key(mesh_config, "obj", "")
 
     if mesh_path[-3:] == "obj":
