@@ -1,0 +1,44 @@
+--- a/src/python_api.cu
++++ b/src/python_api.cu
+@@ -67,6 +67,33 @@ void Testbed::Nerf::Training::set_image(int frame_idx, pybind11::array_t<float>
+ 	dataset.set_training_image(frame_idx, {img_buf.shape[1], img_buf.shape[0]}, (const void*)img_buf.ptr, (const float*)depth_buf.ptr, depth_scale, false, EImageDataType::Float, EDepthDataType::Float);
+ }
+ 
++py::array_t<float> Testbed::sample_mesh_colors(py::array_t<float> verts) {
++	py::buffer_info verts_buf = verts.request();
++
++	std::vector<Vector3f> verts_cpu(verts_buf.shape[0]);
++
++	for (size_t i = 0; i < verts_cpu.size(); ++i) {
++		Vector3f pos = *((Vector3f*)verts_buf.ptr + i);
++
++		verts_cpu[i] = pos; 
++	}
++
++	m_mesh.verts.resize(verts_cpu.size());
++	m_mesh.verts.memset(0);
++	
++	CUDA_CHECK_THROW(cudaMemcpyAsync(m_mesh.verts.data(), verts_cpu.data(), verts_buf.shape[0] * verts_buf.shape[1] * sizeof(float), cudaMemcpyHostToDevice, m_stream.get()));
++	CUDA_CHECK_THROW(cudaStreamSynchronize(m_stream.get()));
++
++	compute_mesh_vertex_colors();
++
++	py::array_t<float> cpucolors({(int)m_mesh.vert_colors.size(), 3});
++	
++	CUDA_CHECK_THROW(cudaMemcpy(cpucolors.request().ptr, m_mesh.vert_colors.data() , m_mesh.vert_colors.size() * 3 * sizeof(float), cudaMemcpyDeviceToHost));
++
++	return cpucolors;
++	
++}
++
+ void Testbed::override_sdf_training_data(py::array_t<float> points, py::array_t<float> distances) {
+ 	py::buffer_info points_buf = points.request();
+ 	py::buffer_info distances_buf = distances.request();
+@@ -392,6 +419,7 @@ PYBIND11_MODULE(pyngp, m) {
+ 			py::arg("json"),
+ 			py::arg("config_base_path") = ""
+ 		)
++		.def("sample_mesh_colors", &Testbed::sample_mesh_colors, "Samples vertex colors for a mesh")
+ 		.def("override_sdf_training_data", &Testbed::override_sdf_training_data, "Override the training data for learning a signed distance function")
+ 		.def("calculate_iou", &Testbed::calculate_iou, "Calculate the intersection over union error value",
+ 			py::arg("n_samples") = 128*1024*1024,
