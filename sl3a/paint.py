@@ -1,4 +1,3 @@
-import os
 import shutil
 
 import torch
@@ -13,13 +12,16 @@ from sl3a.view_generation.inpaint import (
     write_train_transforms,
     inpaint_bidirectional,
 )
+from sl3a.view_generation.nerf_to_mesh import nerf_to_mesh
 from sl3a.view_generation.reproj import render_silhouette
 from sl3a.view_generation.utils import import_config_key
 from sl3a.nerf_reconstruction.train_ngp import sync_config, train_nerf
 
 
 def remove_artifacts(save_dir):
-    os.remove(f"{save_dir}/transforms.json")
+    shutil.rmtree(f"{save_dir}/transforms.json", ignore_errors=True)
+    shutil.rmtree(f"{save_dir}/remeshed_input.obj", ignore_errors=True)
+    shutil.rmtree(f"{save_dir}/remeshed_input.mtl", ignore_errors=True)
     shutil.rmtree(f"{save_dir}/dataset", ignore_errors=True)
     shutil.rmtree(f"{save_dir}/vis", ignore_errors=True)
     shutil.rmtree(f"{save_dir}/sil", ignore_errors=True)
@@ -110,5 +112,6 @@ def paint(mesh_config, inpaint_config, nerf_config):
 
     nerf_args.record_video = True
     train_nerf(nerf_args)
+    nerf_to_mesh(mesh_config, nerf_args.save_snapshot)
 
     remove_artifacts(mesh_config["save_dir"])
