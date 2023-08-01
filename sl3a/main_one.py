@@ -12,7 +12,6 @@ def process_one(path_in, path_out, prompt, seed, inpaint_config, nerf_config):
         "prompt": prompt,
         "obj": path_in,
         "save_dir": path_out,
-        "save_name": os.path.basename(path_in),
         "seed_latents": seed,
     }
 

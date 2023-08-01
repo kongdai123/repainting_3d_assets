@@ -26,10 +26,10 @@ from sl3a.nerf_reconstruction.utils import create_dir, import_config_key, obj
 def sync_config(nerf_config, mesh_config):
     save_dir = create_dir(mesh_config["save_dir"])
     dataset_dir = create_dir(f"{save_dir}/dataset")
-    save_name = import_config_key(mesh_config, "save_name", "")
+    video_save_name = import_config_key(mesh_config, "save_name", "spin_view")
 
     nerf_config["scene"] = f"{save_dir}"
-    nerf_config["video_output"] = f"{save_dir}/{save_name}.mp4".replace(" ", "\ ")
+    nerf_config["video_output"] = f"{save_dir}/{video_save_name}.mp4".replace(" ", "\ ")
     nerf_config["test_transforms"] = f"{dataset_dir}/train_transforms.json"
     nerf_config["save_snapshot"] = f"{save_dir}/model.msgpack"
     nerf_config["bg_color"] = import_config_key(mesh_config, "bg_color", 0.5)
@@ -172,6 +172,3 @@ def train_nerf(args):
         print(cmd)
         os.system(cmd)
         shutil.rmtree(path_video_tmp, ignore_errors=True)
-
-        path_marker_completed = f"{args.scene}/.marker.completed"
-        os.system(f'touch "{path_marker_completed}"')

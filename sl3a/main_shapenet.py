@@ -80,7 +80,6 @@ class ShapeNetDataset:
             "code": dataframe[0][4:],
             "obj": mesh_path,
             "save_dir": save_dir,
-            "save_name": save_name,
             "seed_latents": seed_latents,
             "color": color,
             "trans_mat": trans_mat,
