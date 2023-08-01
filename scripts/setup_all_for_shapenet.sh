@@ -29,4 +29,6 @@ bash "${SELF_DIR}/setup_conda_bin.sh"
 bash "${SELF_DIR}/setup_conda_env.sh"
 bash "${SELF_DIR}/setup_instantngp.sh"
 
-bash "${SELF_DIR}/setup_dataset_shapenet.sh"
+if [ -z "${DISABLE_SHAPENET}" ]; then
+    bash "${SELF_DIR}/setup_dataset_shapenet.sh"
+fi
