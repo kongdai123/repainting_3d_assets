@@ -26,7 +26,7 @@ from sl3a.nerf_reconstruction.utils import create_dir, import_config_key, obj
 def sync_config(nerf_config, mesh_config):
     save_dir = create_dir(mesh_config["save_dir"])
     dataset_dir = create_dir(f"{save_dir}/dataset")
-    video_save_name = import_config_key(mesh_config, "save_name", "spin_view")
+    video_save_name = import_config_key(mesh_config, "save_name", "model")
 
     nerf_config["scene"] = f"{save_dir}"
     nerf_config["video_output"] = f"{save_dir}/{video_save_name}.mp4".replace(" ", "\ ")
