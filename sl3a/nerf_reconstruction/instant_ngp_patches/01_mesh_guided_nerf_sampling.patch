@@ -10,7 +10,7 @@
  
 --- a/src/python_api.cu	2023-08-01 18:23:36
 +++ b/src/python_api.cu	2023-08-01 18:23:36
-@@ -67,6 +67,36 @@
+@@ -67,6 +67,35 @@
  	dataset.set_training_image(frame_idx, {img_buf.shape[1], img_buf.shape[0]}, (const void*)img_buf.ptr, (const float*)depth_buf.ptr, depth_scale, false, EImageDataType::Float, EDepthDataType::Float);
  }
  
@@ -18,8 +18,7 @@
 +	py::buffer_info verts_buf = verts.request();
 +
 +	if (verts_buf.ndim != 2 || verts_buf.shape[1] != 3) {
-+		tlog::error() << "Invalid vertices data";
-+		return py::array_t<float>({0, 3});
++		throw std::runtime_error{"Invalid vertices data"};
 +	}
 +
 +	std::vector<Vector3f> verts_cpu(verts_buf.shape[0]);
@@ -47,7 +46,7 @@
  void Testbed::override_sdf_training_data(py::array_t<float> points, py::array_t<float> distances) {
  	py::buffer_info points_buf = points.request();
  	py::buffer_info distances_buf = distances.request();
-@@ -392,6 +422,7 @@
+@@ -392,6 +421,7 @@
  			py::arg("json"),
  			py::arg("config_base_path") = ""
  		)
