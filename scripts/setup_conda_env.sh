@@ -37,6 +37,9 @@ if [ ! -z "${SL3A_CONDA_PERFORM_SETUP}" ]; then
         exit 0
     fi
 
+    "${CONDA}" install -y -n base --solver classic conda-libmamba-solver
+    "${CONDA}" config --set solver libmamba
+
     "${CONDA}" create -y -n ${SL3A_ENV_NAME_TMP} python=3.9
 
     source "${CONDA_ACTIVATE}" ${SL3A_ENV_NAME_TMP}

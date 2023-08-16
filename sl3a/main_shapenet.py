@@ -116,9 +116,12 @@ def process_items(dataset, range_ids_list, inpaint_config, nerf_config):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--path_instantngp", type=str, required=True)
-    parser.add_argument("--path_shapenet", type=str, required=True)
-    parser.add_argument("--path_out", type=str, required=True)
+    parser.add_argument("-s", "--path_shapenet", type=str, required=True)
+    parser.add_argument("-o", "--path_out", type=str, required=True)
+    parser.add_argument("-g", "--path_instantngp", type=str, required=True)
+    parser.add_argument("--range_start", type=int, default=None)
+    parser.add_argument("--range_end", type=int, default=None)
+    parser.add_argument("--range_ids_list", type=int, nargs="+")
     parser.add_argument(
         "--config_inpaint_path",
         type=str,
@@ -129,9 +132,6 @@ if __name__ == "__main__":
         type=str,
         default="./sl3a/nerf_reconstruction/config/config_nerf.json",
     )
-    parser.add_argument("--range_start", type=int, default=None)
-    parser.add_argument("--range_end", type=int, default=None)
-    parser.add_argument("--range_ids_list", type=int, nargs="+")
 
     args, unknown = parser.parse_known_args()
 

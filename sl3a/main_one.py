@@ -21,9 +21,10 @@ def process_one(path_in, path_out, prompt, seed, inpaint_config, nerf_config):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--path_in", type=str, required=True)
-    parser.add_argument("-o", "--path_out", type=str, required=True)
     parser.add_argument("-p", "--prompt", type=str, required=True)
-    parser.add_argument("--path_instantngp", type=str, required=True)
+    parser.add_argument("-o", "--path_out", type=str, required=True)
+    parser.add_argument("-g", "--path_instantngp", type=str, required=True)
+    parser.add_argument("-s", "--seed", type=int, default=2023)
     parser.add_argument(
         "--config_inpaint_path",
         type=str,
@@ -34,7 +35,6 @@ if __name__ == "__main__":
         type=str,
         default="./sl3a/nerf_reconstruction/config/config_nerf.json",
     )
-    parser.add_argument("-s", "--seed", type=int, default=2023)
 
     args, unknown = parser.parse_known_args()
 

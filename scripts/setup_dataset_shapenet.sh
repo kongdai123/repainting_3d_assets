@@ -70,9 +70,11 @@ if [ ! -f "${SL3A_DATASET_ROOT}/.marker.dataset.shapenet.completed" ]; then
     if [ ! -z "${DAGSHUB_USER}" -a ! -z "${DAGSHUB_TOKEN}" ]; then
         download_fallback
     else
-        echo "Looks like the official ShapeNet server is down. A fallback option requires a www.dagshub.com account."
-        echo "Pass the account information in environment variables DAGSHUB_USER and DAGSHUB_TOKEN."
-        echo "See https://dagshub.com/user/settings/tokens"
+        echo "Looks like the official ShapeNet server is down. A fallback option requires a www.dagshub.com account.
+Pass the account information in environment variables DAGSHUB_USER and DAGSHUB_TOKEN.
+See https://dagshub.com/user/settings/tokens
+Example:
+DAGSHUB_USER=your_username DAGSHUB_TOKEN=your_token $0 $@"
     fi
 fi
 

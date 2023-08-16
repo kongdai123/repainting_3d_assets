@@ -1,12 +1,13 @@
-commentjson==0.9.0
-numpy==1.21.2
-pybind11==2.7.1
-tqdm==4.62.2
-opencv-python==4.5.5.62
-scikit-image==0.19.2
-pandas==2.0.3
-Pillow==9.0.1
+commentjson
+dvc
+numpy
+opencv-python
+pandas
+pillow
+pybind11
+scikit-image
+tqdm
+trimesh
+accelerate==0.15.0
 diffusers @ git+https://github.com/huggingface/diffusers@df2b548e893ccb8a888467c2508756680df22821
 transformers @ git+https://github.com/huggingface/transformers@8637316e5e94ba0a2493e5df7846f2f23f46eaef
-accelerate==0.15.0
-dvc==3.15.1
