@@ -40,6 +40,9 @@ source "${SL3A_CONDA_ROOT}/miniconda3/bin/activate" ${SL3A_ENV_NAME}
 SL3A_INSTANTNGP_ROOT_DEFAULT="${SL3A_ROOT}/instantngp"
 SL3A_INSTANTNGP_ROOT="${SL3A_INSTANTNGP_ROOT:-${SL3A_INSTANTNGP_ROOT_DEFAULT}}"
 
+SL3A_BUILD_INSTALL_ROOT_DEFAULT="${SL3A_ROOT}/tools"
+SL3A_BUILD_INSTALL_ROOT="${SL3A_BUILD_INSTALL_ROOT:-${SL3A_BUILD_INSTALL_ROOT_DEFAULT}}"
+
 mkdir -p "${PATH_OUT}"
 
 SELF=$(realpath "$0")
@@ -49,6 +52,8 @@ SL3A_CODE_ROOT=$(realpath "${SELF_DIR}/..")
 export TRANSFORMERS_CACHE="${SL3A_ROOT}/hfcache"
 export HF_DATASETS_CACHE="${SL3A_ROOT}/hfcache"
 export HF_HOME="${SL3A_ROOT}/hfcache"
+export PATH="${PATH}:${SL3A_BUILD_INSTALL_ROOT}/prefix/bin"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${SL3A_BUILD_INSTALL_ROOT}/prefix/lib"
 
 cd "${SL3A_CODE_ROOT}" && python -m sl3a.main_one \
     --path_instantngp "${SL3A_INSTANTNGP_ROOT}/instant-ngp" \

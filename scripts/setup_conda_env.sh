@@ -45,7 +45,7 @@ if [ ! -z "${SL3A_CONDA_PERFORM_SETUP}" ]; then
     source "${CONDA_ACTIVATE}" ${SL3A_ENV_NAME_TMP}
 
     "${CONDA}" install -y pytorch=1.13.0 pytorch-cuda=11.6 numpy==1.21.2 -c pytorch -c nvidia
-    "${CONDA}" install -y -c fvcore -c iopath -c conda-forge fvcore=0.1.5.post20221221 iopath=0.1.9 ffmpeg=4.3
+    "${CONDA}" install -y -c fvcore -c iopath -c conda-forge fvcore=0.1.5.post20221221 iopath=0.1.9 ffmpeg=4.3 cmake=3.26.4
     "${CONDA}" install -y pytorch3d=0.7.4 -c pytorch3d
 
     pip install -r "${SELF_DIR}/requirements.txt"

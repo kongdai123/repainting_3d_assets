@@ -20,8 +20,6 @@ from sl3a.nerf_reconstruction.train_ngp import sync_config, train_nerf
 
 def remove_artifacts(save_dir):
     shutil.rmtree(f"{save_dir}/transforms.json", ignore_errors=True)
-    shutil.rmtree(f"{save_dir}/remeshed_input.obj", ignore_errors=True)
-    shutil.rmtree(f"{save_dir}/remeshed_input.mtl", ignore_errors=True)
     shutil.rmtree(f"{save_dir}/dataset", ignore_errors=True)
     shutil.rmtree(f"{save_dir}/vis", ignore_errors=True)
     shutil.rmtree(f"{save_dir}/sil", ignore_errors=True)
