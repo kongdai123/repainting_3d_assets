@@ -55,7 +55,7 @@ export HF_HOME="${SL3A_ROOT}/hfcache"
 export PATH="${PATH}:${SL3A_BUILD_INSTALL_ROOT}/prefix/bin"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${SL3A_BUILD_INSTALL_ROOT}/prefix/lib"
 
-cd "${SL3A_CODE_ROOT}" && python -m sl3a.main_one \
+cd "${SL3A_CODE_ROOT}" && python -m sl3a.main_userdata \
     --path_instantngp "${SL3A_INSTANTNGP_ROOT}/instant-ngp" \
     --path_in "${PATH_IN}" \
     --path_out "${PATH_OUT}" \

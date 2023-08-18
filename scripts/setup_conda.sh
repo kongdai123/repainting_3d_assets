@@ -20,36 +20,32 @@ if [ -z "${SL3A_CONDA_ROOT}" ]; then
     exit 255
 fi
 
-if [ -f "${SL3A_CONDA_ROOT}/.marker.env.completed" ]; then
-    echo "Environment already installed"
+if [ -f "${SL3A_CONDA_ROOT}/.marker.conda.completed" ]; then
+    echo "Conda already installed"
     exit 0
 fi
 
+SL3A_CONDA_INSTALLER_FILE="${SL3A_CONDA_INSTALLER_FILE:-Miniconda3-py38_23.3.1-0-Linux-x86_64.sh}"
 SL3A_ENV_NAME="${SL3A_ENV_NAME:-sl3a}"
+
+rm -rf "${SL3A_CONDA_ROOT}"
+mkdir -p "${SL3A_CONDA_ROOT}"
+cd "${SL3A_CONDA_ROOT}"
+
+wget https://repo.anaconda.com/miniconda/${SL3A_CONDA_INSTALLER_FILE}
+bash ${SL3A_CONDA_INSTALLER_FILE} -b -p "${SL3A_CONDA_ROOT}/miniconda3"
 
 CONDA="${SL3A_CONDA_ROOT}/miniconda3/bin/conda"
 CONDA_ACTIVATE="${SL3A_CONDA_ROOT}/miniconda3/bin/activate"
 
 if [ ! -f "${CONDA}" -o ! -f "${CONDA_ACTIVATE}" ]; then
-    echo "\"conda\" not found, check setup_conda_bin.sh"
+    echo "\"conda\" not found"
     exit 255
-fi
-
-if "${CONDA}" env list | grep -qw "^${SL3A_ENV_NAME}"; then
-    "${CONDA}" env remove -n ${SL3A_ENV_NAME}
 fi
 
 "${CONDA}" install -y -n base --solver classic conda-libmamba-solver
 "${CONDA}" config --set solver libmamba
 
-"${CONDA}" create -y -n ${SL3A_ENV_NAME} python=3.9
+"${CONDA}" env create -y -n ${SL3A_ENV_NAME} -f "${SELF_DIR}/environment.yml"
 
-source "${CONDA_ACTIVATE}" ${SL3A_ENV_NAME}
-
-"${CONDA}" install -y pytorch=1.13.0 pytorch-cuda=11.6 numpy==1.21.2 -c pytorch -c nvidia
-"${CONDA}" install -y -c fvcore -c iopath -c conda-forge fvcore=0.1.5.post20221221 iopath=0.1.9 ffmpeg=4.3 cmake=3.26.4
-"${CONDA}" install -y pytorch3d=0.7.4 -c pytorch3d
-pip install -r "${SELF_DIR}/requirements.txt"
-
-touch "${SL3A_CONDA_ROOT}/.marker.env.completed"
-echo "Conda environment \"${SL3A_ENV_NAME}\" is now installed"
+touch "${SL3A_CONDA_ROOT}/.marker.conda.completed"

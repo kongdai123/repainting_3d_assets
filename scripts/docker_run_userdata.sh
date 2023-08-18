@@ -59,7 +59,7 @@ fi
     --user $(id -u):$(id -g) \
     --ulimit core=0:0 \
     second_life_3d_assets \
-    bash /sl3a/code/scripts/conda_run_one.sh \
+    bash /sl3a/code/scripts/conda_run_userdata.sh \
         /sl3a \
         "/sl3a/assets_in/${PATH_IN_FILE}" \
         /sl3a/assets_out/ \

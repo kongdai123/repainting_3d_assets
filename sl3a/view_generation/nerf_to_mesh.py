@@ -90,3 +90,6 @@ def nerf_to_mesh(
     mesh_out = trimesh.Trimesh(vertices=verts, faces=faces, vertex_colors=color_ngp)
     mesh_out.export(f"{save_dir}/model.ply")
     mesh_out.export(f"{save_dir}/model.drc")
+
+    os.remove(f"{save_dir}/input.ply.off")
+    os.remove(f"{save_dir}/input_{resolution}.ply.off")

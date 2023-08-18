@@ -26,8 +26,7 @@ export TRANSFORMERS_CACHE="${SL3A_ROOT}/hfcache"
 export HF_DATASETS_CACHE="${SL3A_ROOT}/hfcache"
 export HF_HOME="${SL3A_ROOT}/hfcache"
 
-bash "${SELF_DIR}/setup_conda_bin.sh"
-bash "${SELF_DIR}/setup_conda_env.sh"
+bash "${SELF_DIR}/setup_conda.sh"
 bash "${SELF_DIR}/setup_instantngp.sh"
 bash "${SELF_DIR}/setup_model_export.sh"
 

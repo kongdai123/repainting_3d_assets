@@ -1,0 +1,32 @@
+name: sl3a
+channels:
+  - pytorch3d
+  - pytorch
+  - iopath
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - cmake=3.26.4
+  - ffmpeg=4.3
+  - fvcore=0.1.5.post20221221
+  - iopath=0.1.9
+  - numpy==1.21.2
+  - pip=23.2.1
+  - python=3.9.17
+  - pytorch=1.13.0
+  - pytorch-cuda=11.6
+  - pytorch3d=0.7.4
+  - pip:
+      - accelerate==0.15.0
+      - commentjson==0.9.0
+      - diffusers @ git+https://github.com/huggingface/diffusers@df2b548e893ccb8a888467c2508756680df22821
+      - dvc==3.15.3
+      - opencv-python==4.5.5.62
+      - pandas==2.0.3
+      - pillow==9.0.1
+      - pybind11==2.7.1
+      - scikit-image==0.19.2
+      - tqdm==4.63.1
+      - transformers @ git+https://github.com/huggingface/transformers@8637316e5e94ba0a2493e5df7846f2f23f46eaef
+      - trimesh==3.17.1
