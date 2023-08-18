@@ -42,7 +42,7 @@ class ShapeNetDataset:
         if isinstance(up, str) and isinstance(front, str):
 
             def convert_string_to_torch(my_string, device="cuda", dtype=torch.float32):
-                vec = [int(a) for a in my_string.split("\\,")]
+                vec = [float(a) for a in my_string.split("\\,")]
                 assert len(vec) == 3
                 out = torch.tensor(vec, device=device, dtype=dtype)
                 return out

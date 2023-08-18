@@ -33,7 +33,7 @@ GMP_VERSION=6.2.1
 MPFR_VERSION=4.2.0
 EIGEN_VERSION=3.4.0
 CGAL_VERSION=5.6-beta1
-REMESH_VERSION=57285b00
+REMESH_VERSION=56413d10
 DRACO_VERSION=1.5.6
 
 source "${SL3A_CONDA_ROOT}/miniconda3/bin/activate" "${SL3A_ENV_NAME}"
@@ -111,6 +111,7 @@ fi
 
 if [ ! -f "${SL3A_INSTALL_PREFIX}/.marker.dep6.remesher.installed" ]; then
     cd "${SL3A_BUILD_INSTALL_ROOT}"
+    rm -rf remesh_isotropic_planar
     git clone https://github.com/toshas/remesh_isotropic_planar.git
     cd remesh_isotropic_planar
     git checkout ${REMESH_VERSION}

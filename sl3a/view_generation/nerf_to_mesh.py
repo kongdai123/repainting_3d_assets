@@ -1,7 +1,5 @@
 import os.path
 import subprocess
-import tempfile
-import uuid
 
 import numpy as np
 import pyngp as ngp  # noqa
@@ -13,9 +11,8 @@ from sl3a.view_generation.utils3D import position_verts
 
 
 def remesh_subdivide_isotropic_planar(path_input, path_output, resolution):
-    temp_dir = tempfile.gettempdir()
-    path_input_off = os.path.join(temp_dir, str(uuid.uuid4()) + ".off")
-    path_output_off = os.path.join(temp_dir, str(uuid.uuid4()) + ".off")
+    path_input_off = path_input + ".off"
+    path_output_off = path_output + ".off"
 
     mesh = trimesh.load_mesh(path_input)
     if isinstance(mesh, trimesh.Scene):
