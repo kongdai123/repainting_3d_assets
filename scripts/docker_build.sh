@@ -26,6 +26,6 @@ fi
 
 "${DOCKER}" build \
   --pull \
-  --tag second_life_3d_assets \
+  --tag repainting_3d_assets \
   -f "${SELF_DIR}/Dockerfile" \
   "${SL3A_CODE_ROOT}"

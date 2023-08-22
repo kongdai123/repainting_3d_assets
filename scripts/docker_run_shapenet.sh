@@ -58,5 +58,5 @@ fi
     ${CMD_MOUNT_LATEST_CODE} \
     --user $(id -u):$(id -g) \
     --ulimit core=0:0 \
-    second_life_3d_assets \
+    repainting_3d_assets \
     bash /sl3a/code/scripts/conda_run_shapenet.sh /sl3a "$@"
