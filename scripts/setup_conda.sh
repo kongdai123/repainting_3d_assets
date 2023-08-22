@@ -15,28 +15,28 @@ if [ -n "$CONDA_PREFIX" ]; then
     conda deactivate
 fi
 
-if [ -z "${SL3A_CONDA_ROOT}" ]; then
-    echo "SL3A_CONDA_ROOT not set or is empty"
+if [ -z "${REPAINTING3D_CONDA_ROOT}" ]; then
+    echo "REPAINTING3D_CONDA_ROOT not set or is empty"
     exit 255
 fi
 
-if [ -f "${SL3A_CONDA_ROOT}/.marker.conda.completed" ]; then
+if [ -f "${REPAINTING3D_CONDA_ROOT}/.marker.conda.completed" ]; then
     echo "Conda already installed"
     exit 0
 fi
 
-SL3A_CONDA_INSTALLER_FILE="${SL3A_CONDA_INSTALLER_FILE:-Miniconda3-py38_23.3.1-0-Linux-x86_64.sh}"
-SL3A_ENV_NAME="${SL3A_ENV_NAME:-sl3a}"
+REPAINTING3D_CONDA_INSTALLER_FILE="${REPAINTING3D_CONDA_INSTALLER_FILE:-Miniconda3-py38_23.3.1-0-Linux-x86_64.sh}"
+REPAINTING3D_ENV_NAME="${REPAINTING3D_ENV_NAME:-repainting_3d_assets}"
 
-rm -rf "${SL3A_CONDA_ROOT}"
-mkdir -p "${SL3A_CONDA_ROOT}"
-cd "${SL3A_CONDA_ROOT}"
+rm -rf "${REPAINTING3D_CONDA_ROOT}"
+mkdir -p "${REPAINTING3D_CONDA_ROOT}"
+cd "${REPAINTING3D_CONDA_ROOT}"
 
-wget https://repo.anaconda.com/miniconda/${SL3A_CONDA_INSTALLER_FILE}
-bash ${SL3A_CONDA_INSTALLER_FILE} -b -p "${SL3A_CONDA_ROOT}/miniconda3"
+wget https://repo.anaconda.com/miniconda/${REPAINTING3D_CONDA_INSTALLER_FILE}
+bash ${REPAINTING3D_CONDA_INSTALLER_FILE} -b -p "${REPAINTING3D_CONDA_ROOT}/miniconda3"
 
-CONDA="${SL3A_CONDA_ROOT}/miniconda3/bin/conda"
-CONDA_ACTIVATE="${SL3A_CONDA_ROOT}/miniconda3/bin/activate"
+CONDA="${REPAINTING3D_CONDA_ROOT}/miniconda3/bin/conda"
+CONDA_ACTIVATE="${REPAINTING3D_CONDA_ROOT}/miniconda3/bin/activate"
 
 if [ ! -f "${CONDA}" -o ! -f "${CONDA_ACTIVATE}" ]; then
     echo "\"conda\" not found"
@@ -46,6 +46,6 @@ fi
 "${CONDA}" install -y -n base --solver classic conda-libmamba-solver
 "${CONDA}" config --set solver libmamba
 
-"${CONDA}" env create -y -n ${SL3A_ENV_NAME} -f "${SELF_DIR}/environment.yml"
+"${CONDA}" env create -y -n ${REPAINTING3D_ENV_NAME} -f "${SELF_DIR}/environment.yml"
 
-touch "${SL3A_CONDA_ROOT}/.marker.conda.completed"
+touch "${REPAINTING3D_CONDA_ROOT}/.marker.conda.completed"

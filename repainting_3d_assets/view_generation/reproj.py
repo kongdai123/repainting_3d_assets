@@ -11,11 +11,11 @@ from pytorch3d.renderer import (
     MeshRasterizer,
 )
 
-from sl3a.view_generation.raster_settings import (
+from repainting_3d_assets.view_generation.raster_settings import (
     raster_settings_mesh_ptcloud,
     raster_settings_mesh,
 )
-from sl3a.view_generation.utils import create_dir, import_config_key
+from repainting_3d_assets.view_generation.utils import create_dir, import_config_key
 
 
 def create_meshgrid(

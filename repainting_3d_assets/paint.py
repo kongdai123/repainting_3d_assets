@@ -2,20 +2,20 @@ import shutil
 
 import torch
 
-from sl3a.view_generation.depth_supervised_inpainting_pipeline import (
+from repainting_3d_assets.view_generation.depth_supervised_inpainting_pipeline import (
     StableDiffusionDepth2ImgInpaintingPipeline,
 )
-from sl3a.view_generation.inpaint import (
+from repainting_3d_assets.view_generation.inpaint import (
     initialize_meshes,
     inpaint_first_view,
     inpaint_facade,
     write_train_transforms,
     inpaint_bidirectional,
 )
-from sl3a.view_generation.nerf_to_mesh import nerf_to_mesh
-from sl3a.view_generation.reproj import render_silhouette
-from sl3a.view_generation.utils import import_config_key
-from sl3a.nerf_reconstruction.train_ngp import sync_config, train_nerf
+from repainting_3d_assets.view_generation.nerf_to_mesh import nerf_to_mesh
+from repainting_3d_assets.view_generation.reproj import render_silhouette
+from repainting_3d_assets.view_generation.utils import import_config_key
+from repainting_3d_assets.nerf_reconstruction.train_ngp import sync_config, train_nerf
 
 
 def remove_artifacts(save_dir):

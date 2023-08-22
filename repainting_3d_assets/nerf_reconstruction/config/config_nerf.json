@@ -1,5 +1,5 @@
 {
-    "video_camera_path": "./sl3a/nerf_reconstruction/cam_path/360frames.json",
+    "video_camera_path": "./repainting_3d_assets/nerf_reconstruction/cam_path/360frames.json",
     "network": "fine_network.json",
     "n_steps": 20000,
     "video_camera_smoothing": false,

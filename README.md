@@ -4,7 +4,7 @@ This repository implements a method from our BMVC'23 paper "Breathing New Life i
 
 # Quick Start
 
-Install a [Docker](https://www.docker.com/)-compatible<sup>*</sup> runtime and use the following command to repaint your 3D asset. 
+Install a [Docker](https://www.docker.com/)-compatible runtime and use the following command to repaint your 3D asset.
 The asset is painted according to the text prompt specified as the last argument. 
 For example:
 
@@ -17,8 +17,6 @@ The result can be found in the `out/` directory. It contains:
 - `model.mp4`, a 360-degree spin view video of the result;
 - `model.msgpack`, an NeRF file with the output in Instant NGP format;
 - `model.obj`, a standard 3D model that has the geometry of the input 3D model and painting of the NeRF output.
-
-<sup>*</sup> Docker, Singularity, Podman, etc.
 
 # Development
 

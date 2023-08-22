@@ -1,4 +1,4 @@
-name: sl3a
+name: repainting_3d_assets
 channels:
   - pytorch3d
   - pytorch

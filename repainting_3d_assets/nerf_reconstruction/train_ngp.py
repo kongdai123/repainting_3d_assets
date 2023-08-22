@@ -19,8 +19,12 @@ import numpy as np
 import pyngp as ngp  # noqa
 from tqdm import tqdm
 
-from sl3a.nerf_reconstruction.common import repl, write_image
-from sl3a.nerf_reconstruction.utils import create_dir, import_config_key, obj
+from repainting_3d_assets.nerf_reconstruction.common import repl, write_image
+from repainting_3d_assets.nerf_reconstruction.utils import (
+    create_dir,
+    import_config_key,
+    obj,
+)
 
 
 def sync_config(nerf_config, mesh_config):

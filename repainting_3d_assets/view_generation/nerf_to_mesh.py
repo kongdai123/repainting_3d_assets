@@ -6,8 +6,8 @@ import pyngp as ngp  # noqa
 import trimesh
 from tqdm import tqdm
 
-from sl3a.view_generation.pt3d_mesh_io import load_obj
-from sl3a.view_generation.utils3D import position_verts
+from repainting_3d_assets.view_generation.pt3d_mesh_io import load_obj
+from repainting_3d_assets.view_generation.utils3D import position_verts
 
 
 def remesh_subdivide_isotropic_planar(path_input, path_output, resolution):

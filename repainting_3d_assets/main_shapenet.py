@@ -5,7 +5,7 @@ import os
 import pandas
 import torch
 
-from sl3a.nerf_reconstruction.common import add_instantngp_sys_path
+from repainting_3d_assets.nerf_reconstruction.common import add_instantngp_sys_path
 
 
 class ShapeNetDataset:
@@ -93,7 +93,7 @@ def process_one(dataset, mesh_idx, inpaint_config, nerf_config):
         mesh_idx, seed_latents=(mesh_idx + 1) * 16384 - 1, prepend_idx=True
     )
     try:
-        from sl3a.paint import paint
+        from repainting_3d_assets.paint import paint
 
         paint(mesh_config, inpaint_config, nerf_config)
     except Exception as e:
@@ -125,12 +125,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config_inpaint_path",
         type=str,
-        default="./sl3a/view_generation/config/config_inpaint.json",
+        default="./repainting_3d_assets/view_generation/config/config_inpaint.json",
     )
     parser.add_argument(
         "--config_nerf_path",
         type=str,
-        default="./sl3a/nerf_reconstruction/config/config_nerf.json",
+        default="./repainting_3d_assets/nerf_reconstruction/config/config_nerf.json",
     )
 
     args, unknown = parser.parse_known_args()

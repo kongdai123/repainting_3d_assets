@@ -3,7 +3,7 @@ from pytorch3d.io.mtl_io import *
 from pytorch3d.io.obj_io import *
 from pytorch3d.io.utils import _check_faces_indices, _open_file
 
-from sl3a.view_generation.utils3D import swap_faces
+from repainting_3d_assets.view_generation.utils3D import swap_faces
 
 
 def load_obj(

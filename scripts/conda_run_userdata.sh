@@ -19,9 +19,9 @@ if [ -n "$CONDA_PREFIX" ]; then
     conda deactivate
 fi
 
-SL3A_ENV_NAME=${SL3A_ENV_NAME:-sl3a}
+REPAINTING3D_ENV_NAME=${REPAINTING3D_ENV_NAME:-repainting_3d_assets}
 
-SL3A_ROOT="$1"
+REPAINTING3D_ROOT="$1"
 shift
 PATH_IN=$(realpath "$1")
 shift
@@ -30,33 +30,33 @@ shift
 PROMPT="$1"
 shift
 
-SL3A_CONDA_ROOT="${SL3A_ROOT}/conda"
-if [ ! -f "${SL3A_CONDA_ROOT}/miniconda3/bin/conda" ]; then
+REPAINTING3D_CONDA_ROOT="${REPAINTING3D_ROOT}/conda"
+if [ ! -f "${REPAINTING3D_CONDA_ROOT}/miniconda3/bin/conda" ]; then
     echo "\"conda\" not found, check setup_conda_bin.sh"
     exit 255
 fi
-source "${SL3A_CONDA_ROOT}/miniconda3/bin/activate" ${SL3A_ENV_NAME}
+source "${REPAINTING3D_CONDA_ROOT}/miniconda3/bin/activate" ${REPAINTING3D_ENV_NAME}
 
-SL3A_INSTANTNGP_ROOT_DEFAULT="${SL3A_ROOT}/instantngp"
-SL3A_INSTANTNGP_ROOT="${SL3A_INSTANTNGP_ROOT:-${SL3A_INSTANTNGP_ROOT_DEFAULT}}"
+REPAINTING3D_INSTANTNGP_ROOT_DEFAULT="${REPAINTING3D_ROOT}/instantngp"
+REPAINTING3D_INSTANTNGP_ROOT="${REPAINTING3D_INSTANTNGP_ROOT:-${REPAINTING3D_INSTANTNGP_ROOT_DEFAULT}}"
 
-SL3A_BUILD_INSTALL_ROOT_DEFAULT="${SL3A_ROOT}/tools"
-SL3A_BUILD_INSTALL_ROOT="${SL3A_BUILD_INSTALL_ROOT:-${SL3A_BUILD_INSTALL_ROOT_DEFAULT}}"
+REPAINTING3D_BUILD_INSTALL_ROOT_DEFAULT="${REPAINTING3D_ROOT}/tools"
+REPAINTING3D_BUILD_INSTALL_ROOT="${REPAINTING3D_BUILD_INSTALL_ROOT:-${REPAINTING3D_BUILD_INSTALL_ROOT_DEFAULT}}"
 
 mkdir -p "${PATH_OUT}"
 
 SELF=$(realpath "$0")
 SELF_DIR=$(dirname "${SELF}")
-SL3A_CODE_ROOT=$(realpath "${SELF_DIR}/..")
+REPAINTING3D_CODE_ROOT=$(realpath "${SELF_DIR}/..")
 
-export TRANSFORMERS_CACHE="${SL3A_ROOT}/hfcache"
-export HF_DATASETS_CACHE="${SL3A_ROOT}/hfcache"
-export HF_HOME="${SL3A_ROOT}/hfcache"
-export PATH="${PATH}:${SL3A_BUILD_INSTALL_ROOT}/prefix/bin"
-export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${SL3A_BUILD_INSTALL_ROOT}/prefix/lib"
+export TRANSFORMERS_CACHE="${REPAINTING3D_ROOT}/hfcache"
+export HF_DATASETS_CACHE="${REPAINTING3D_ROOT}/hfcache"
+export HF_HOME="${REPAINTING3D_ROOT}/hfcache"
+export PATH="${PATH}:${REPAINTING3D_BUILD_INSTALL_ROOT}/prefix/bin"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${REPAINTING3D_BUILD_INSTALL_ROOT}/prefix/lib"
 
-cd "${SL3A_CODE_ROOT}" && python -m sl3a.main_userdata \
-    --path_instantngp "${SL3A_INSTANTNGP_ROOT}/instant-ngp" \
+cd "${REPAINTING3D_CODE_ROOT}" && python -m repainting_3d_assets.main_userdata \
+    --path_instantngp "${REPAINTING3D_INSTANTNGP_ROOT}/instant-ngp" \
     --path_in "${PATH_IN}" \
     --path_out "${PATH_OUT}" \
     --prompt "${PROMPT}" \

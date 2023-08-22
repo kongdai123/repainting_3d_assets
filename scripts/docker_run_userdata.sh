@@ -9,7 +9,7 @@ if ! type source > /dev/null 2>&1; then
 fi
 SELF=$(readlink -f "${BASH_SOURCE[0]}")
 SELF_DIR=$(dirname "${SELF}")
-SL3A_CODE_ROOT=$(realpath "${SELF_DIR}/..")
+REPAINTING3D_CODE_ROOT=$(realpath "${SELF_DIR}/..")
 
 USE_CODE_FROM_DOCKER=0
 
@@ -45,22 +45,22 @@ fi
 
 CMD_MOUNT_LATEST_CODE=""
 if [ ! "${USE_CODE_FROM_DOCKER}" -eq "1" ]; then
-    CMD_MOUNT_LATEST_CODE="-v "${SL3A_CODE_ROOT}":/sl3a/code"
+    CMD_MOUNT_LATEST_CODE="-v "${REPAINTING3D_CODE_ROOT}":/repainting_3d_assets/code"
 fi
 
 "${DOCKER}" run \
     -it \
     --rm \
-    -v "${SL3A_DATASET_ROOT}":/sl3a/dataset \
-    -v "${SL3A_OUT_SHAPENET}":/sl3a/out_shapenet \
+    -v "${REPAINTING3D_DATASET_ROOT}":/repainting_3d_assets/dataset \
+    -v "${REPAINTING3D_OUT_SHAPENET}":/repainting_3d_assets/out_shapenet \
     ${CMD_MOUNT_LATEST_CODE} \
-    -v "${PATH_IN_DIR}":/sl3a/assets_in \
-    -v "${PATH_OUT}":/sl3a/assets_out \
+    -v "${PATH_IN_DIR}":/repainting_3d_assets/assets_in \
+    -v "${PATH_OUT}":/repainting_3d_assets/assets_out \
     --user $(id -u):$(id -g) \
     --ulimit core=0:0 \
     repainting_3d_assets \
-    bash /sl3a/code/scripts/conda_run_userdata.sh \
-        /sl3a \
-        "/sl3a/assets_in/${PATH_IN_FILE}" \
-        /sl3a/assets_out/ \
+    bash /repainting_3d_assets/code/scripts/conda_run_userdata.sh \
+        /repainting_3d_assets \
+        "/repainting_3d_assets/assets_in/${PATH_IN_FILE}" \
+        /repainting_3d_assets/assets_out/ \
         "${PROMPT}"

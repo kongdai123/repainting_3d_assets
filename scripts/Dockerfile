@@ -9,25 +9,25 @@ RUN DEBIAN_FRONTEND="noninteractive" apt-get install -y \
 RUN groupadd ${UNAME}-group
 RUN useradd -m -c ${UNAME} -G root -s /bin/bash ${UNAME}
 
-ENV SL3A_ROOT=/sl3a
-RUN mkdir -p ${SL3A_ROOT}
-RUN chown -R ${UNAME}:${UNAME}-group ${SL3A_ROOT}
-RUN chmod -R 777 ${SL3A_ROOT}
+ENV REPAINTING3D_ROOT=/repainting_3d_assets
+RUN mkdir -p ${REPAINTING3D_ROOT}
+RUN chown -R ${UNAME}:${UNAME}-group ${REPAINTING3D_ROOT}
+RUN chmod -R 777 ${REPAINTING3D_ROOT}
 
 USER ${UNAME}
 
-WORKDIR ${SL3A_ROOT}
+WORKDIR ${REPAINTING3D_ROOT}
 
-ENV SL3A_CONDA_ROOT=${SL3A_ROOT}/conda
-ENV SL3A_DATASET_ROOT=${SL3A_ROOT}/dataset
-ENV SL3A_INSTANTNGP_ROOT=${SL3A_ROOT}/instantngp
+ENV REPAINTING3D_CONDA_ROOT=${REPAINTING3D_ROOT}/conda
+ENV REPAINTING3D_DATASET_ROOT=${REPAINTING3D_ROOT}/dataset
+ENV REPAINTING3D_INSTANTNGP_ROOT=${REPAINTING3D_ROOT}/instantngp
 
-ENV TRANSFORMERS_CACHE=${SL3A_ROOT}/hfcache
-ENV HF_DATASETS_CACHE=${SL3A_ROOT}/hfcache
-ENV HF_HOME=${SL3A_ROOT}/hfcache
+ENV TRANSFORMERS_CACHE=${REPAINTING3D_ROOT}/hfcache
+ENV HF_DATASETS_CACHE=${REPAINTING3D_ROOT}/hfcache
+ENV HF_HOME=${REPAINTING3D_ROOT}/hfcache
 
-COPY . ${SL3A_ROOT}/code
+COPY . ${REPAINTING3D_ROOT}/code
 
-RUN bash ${SL3A_ROOT}/code/scripts/setup_conda_bin.sh ${SL3A_ROOT}
-RUN bash ${SL3A_ROOT}/code/scripts/setup_conda_env.sh ${SL3A_ROOT}
-RUN bash ${SL3A_ROOT}/code/scripts/setup_instantngp.sh ${SL3A_ROOT}
+RUN bash ${REPAINTING3D_ROOT}/code/scripts/setup_conda_bin.sh ${REPAINTING3D_ROOT}
+RUN bash ${REPAINTING3D_ROOT}/code/scripts/setup_conda_env.sh ${REPAINTING3D_ROOT}
+RUN bash ${REPAINTING3D_ROOT}/code/scripts/setup_instantngp.sh ${REPAINTING3D_ROOT}

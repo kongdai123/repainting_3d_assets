@@ -9,7 +9,7 @@ if ! type source > /dev/null 2>&1; then
 fi
 SELF=$(readlink -f "${BASH_SOURCE[0]}")
 SELF_DIR=$(dirname "${SELF}")
-SL3A_CODE_ROOT=$(realpath "${SELF_DIR}/..")
+REPAINTING3D_CODE_ROOT=$(realpath "${SELF_DIR}/..")
 
 DOCKER=""
 
@@ -28,4 +28,4 @@ fi
   --pull \
   --tag repainting_3d_assets \
   -f "${SELF_DIR}/Dockerfile" \
-  "${SL3A_CODE_ROOT}"
+  "${REPAINTING3D_CODE_ROOT}"

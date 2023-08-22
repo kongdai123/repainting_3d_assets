@@ -4,7 +4,7 @@ import torch
 from pytorch3d.renderer import look_at_view_transform
 import json
 
-from sl3a.view_generation.utils import sharpness, listify_matrix
+from repainting_3d_assets.view_generation.utils import sharpness, listify_matrix
 
 
 def position_verts(verts, trans_mat, swap_face=True, shape_scale=1.2):
