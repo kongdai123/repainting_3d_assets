@@ -12,6 +12,7 @@ import os
 import shutil
 import subprocess
 import time
+from contextlib import contextmanager
 
 import PIL.Image as Image
 import commentjson as json
@@ -19,12 +20,32 @@ import numpy as np
 import pyngp as ngp  # noqa
 from tqdm import tqdm
 
-from repainting_3d_assets.nerf_reconstruction.common import repl, write_image
+from repainting_3d_assets.nerf_reconstruction.common import write_image
 from repainting_3d_assets.nerf_reconstruction.utils import (
     create_dir,
     import_config_key,
     obj,
 )
+
+
+@contextmanager
+def suppress_output_fd():
+    if "DEBUG" in os.environ:
+        yield
+        return
+    old_stdout_fd = os.dup(1)
+    old_stderr_fd = os.dup(2)
+    with open(os.devnull, "w") as fnull:
+        devnull_fd = fnull.fileno()
+        os.dup2(devnull_fd, 1)
+        os.dup2(devnull_fd, 2)
+        try:
+            yield
+        finally:
+            os.dup2(old_stdout_fd, 1)
+            os.dup2(old_stderr_fd, 2)
+            os.close(old_stdout_fd)
+            os.close(old_stderr_fd)
 
 
 def sync_config(nerf_config, mesh_config):
@@ -43,26 +64,24 @@ def sync_config(nerf_config, mesh_config):
 
 
 def train_nerf(args):
-    mode = ngp.TestbedMode.Nerf
-    configs_dir = os.path.join(args.path_instantngp, "configs", "nerf")
-    base_network = os.path.join(configs_dir, "base.json")
-    network = args.network if args.network else base_network
-    if not os.path.isabs(network):
-        network = os.path.join(configs_dir, network)
-    print("running_network")
-    print(network)
-    testbed = ngp.Testbed(mode)
-    testbed.nerf.sharpen = 0.0
-    testbed.exposure = 0.0
-    testbed.nerf.training.depth_supervision_lambda = 1.0
-    testbed.nerf.training.random_bg_color = True
-    if args.scene:
-        scene = args.scene
-        testbed.load_training_data(scene)
-    testbed.reload_network_from_file(network)
-    testbed.shall_train = True
-
-    testbed.nerf.render_with_lens_distortion = True
+    with suppress_output_fd():
+        mode = ngp.TestbedMode.Nerf
+        configs_dir = os.path.join(args.path_instantngp, "configs", "nerf")
+        base_network = os.path.join(configs_dir, "base.json")
+        network = args.network if args.network else base_network
+        if not os.path.isabs(network):
+            network = os.path.join(configs_dir, network)
+        testbed = ngp.Testbed(mode)
+        testbed.nerf.sharpen = 0.0
+        testbed.exposure = 0.0
+        testbed.nerf.training.depth_supervision_lambda = 1.0
+        testbed.nerf.training.random_bg_color = True
+        if args.scene:
+            scene = args.scene
+            testbed.load_training_data(scene)
+        testbed.reload_network_from_file(network)
+        testbed.shall_train = True
+        testbed.nerf.render_with_lens_distortion = True
 
     old_training_step = 0
     n_steps = args.n_steps
@@ -75,10 +94,11 @@ def train_nerf(args):
 
     tqdm_last_update = 0
     if n_steps > 0:
-        with tqdm(desc="Training", total=n_steps, unit="step") as t:
+        with tqdm(desc="Reconciling views", total=n_steps, unit="step") as t:
             while testbed.frame():
                 if testbed.want_repl():
-                    repl(testbed)
+                    raise RuntimeError("REPL not supported")
+
                 # What will happen when training is done?
                 if testbed.training_step >= n_steps:
                     break
@@ -96,11 +116,9 @@ def train_nerf(args):
                     tqdm_last_update = now
 
     if args.save_snapshot:
-        print("Saving snapshot ", args.save_snapshot)
         testbed.save_snapshot(args.save_snapshot, False)
 
     if args.test_transforms:
-        print("Evaluating test transforms from ", args.test_transforms)
         with open(args.test_transforms) as f:
             test_transforms = json.load(f)
 
@@ -113,24 +131,17 @@ def train_nerf(args):
         testbed.fov = test_transforms["camera_angle_x"] * 180 / np.pi
         testbed.shall_train = False
 
-        with tqdm(
-            list(enumerate(test_transforms["frames"])),
-            unit="images",
-            desc=f"Rendering test frame",
-        ) as t:
-            for i, frame in t:
-                testbed.set_nerf_camera_matrix(
-                    np.matrix(frame["transform_matrix"])[:-1, :]
-                )
-                image = testbed.render(
-                    test_transforms["h"], test_transforms["w"], spp, True
-                )
-                file_dir = frame["file_dir"]
-                save_dir_img = f"{args.scene}/{file_dir}"
-                os.makedirs(save_dir_img, exist_ok=True)
+        for i, frame in enumerate(test_transforms["frames"]):
+            testbed.set_nerf_camera_matrix(np.matrix(frame["transform_matrix"])[:-1, :])
+            image = testbed.render(
+                test_transforms["h"], test_transforms["w"], spp, True
+            )
+            file_dir = frame["file_dir"]
+            save_dir_img = f"{args.scene}/{file_dir}"
+            os.makedirs(save_dir_img, exist_ok=True)
 
-                img_path = f"{save_dir_img}/out_train.png"
-                write_image(img_path, image)
+            img_path = f"{save_dir_img}/out_train.png"
+            write_image(img_path, image)
 
     if args.video_camera_path and args.record_video:
         with open(args.video_camera_path) as f:
@@ -145,7 +156,7 @@ def train_nerf(args):
         with tqdm(
             list(enumerate(vid_transforms["frames"])),
             unit="images",
-            desc=f"Rendering test frame",
+            desc=f"Rendering video frames",
         ) as t:
             for i, frame in t:
                 testbed.set_nerf_camera_matrix(
@@ -172,7 +183,11 @@ def train_nerf(args):
                     image.save(f"{spin_views_dir}/deg{i:03d}.png")
 
         cmd = f"ffmpeg -y -framerate {args.video_fps} -i {path_video_tmp}/%04d.jpg -c:v mpeg4 -q:v 2 -pix_fmt yuv420p {args.video_output}"
-        print(subprocess.getoutput("which ffmpeg"))
-        print(cmd)
-        os.system(cmd)
+        if "DEBUG" in os.environ:
+            print(subprocess.getoutput("which ffmpeg"))
+            print(cmd)
+        with suppress_output_fd():
+            os.system(cmd)
         shutil.rmtree(path_video_tmp, ignore_errors=True)
+        if not os.path.exists(args.video_output):
+            print("Video generation failed")

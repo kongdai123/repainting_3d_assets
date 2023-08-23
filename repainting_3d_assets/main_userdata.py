@@ -41,7 +41,7 @@ if __name__ == "__main__":
     if unknown:
         raise ValueError("Unknown arguments", unknown)
 
-    add_instantngp_sys_path(args.path_instantngp)
+    add_instantngp_sys_path(args.path_instantngp, verbose=("DEBUG" in os.environ))
 
     with open(args.config_inpaint_path) as json_file:
         inpaint_config = json.load(json_file)

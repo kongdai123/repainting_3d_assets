@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 set -e
-set -x
+if [ ! -z "${DEBUG}" ]; then
+    set -x
+fi
 
-if [ $# -ne 4 ]; then
+if [ $# -lt 4 ]; then
     echo "Error: Insufficient command line arguments:"
     echo "$0 <working_dir> <path_input> <path_output> <prompt>"
     exit 255
 fi
 
 if ! type source > /dev/null 2>&1; then
-    echo "Restarting the script with bash interpreter"
+    if [ ! -z "${DEBUG}" ]; then
+        echo "Restarting the script with bash interpreter"
+    fi
     bash "$0" "$@"
     exit $?
 fi

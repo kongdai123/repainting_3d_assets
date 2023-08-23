@@ -21,6 +21,7 @@ import torch
 import PIL
 from diffusers.utils import is_accelerate_available
 from packaging import version
+from tqdm import tqdm
 from transformers import (
     CLIPTextModel,
     CLIPTokenizer,
@@ -523,7 +524,6 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
                     shape, generator=generator, device=rand_device, dtype=dtype
                 ).to(device)
         if latents != None:
-            print("use noise latents")
             noise = latents
         # get latents
         latents_img_ori = init_latents
@@ -600,6 +600,7 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
         inpainting_strength: Optional[float] = 1,
         mask_blend_kernel: Optional[int] = -1,
         latent_blend_kernel: Optional[int] = -1,
+        desc: Optional[str] = None,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -657,8 +658,6 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
             (nsfw) content, according to the `safety_checker`.
         """
         # 1. Check inputs
-        if latents == None:
-            print("no noise latents")
         self.check_inputs(prompt, strength, callback_steps)
 
         # 2. Define call parameters
@@ -739,7 +738,7 @@ class StableDiffusionDepth2ImgInpaintingPipeline(DiffusionPipeline):
 
         # 9. Denoising loop
         num_warmup_steps = len(timesteps) - num_inference_steps * self.scheduler.order
-        with self.progress_bar(total=num_inference_steps) as progress_bar:
+        with tqdm(total=num_inference_steps, desc=desc) as progress_bar:
             for i, t in enumerate(timesteps):
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (

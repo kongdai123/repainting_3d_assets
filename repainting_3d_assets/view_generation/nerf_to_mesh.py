@@ -1,13 +1,22 @@
-import os.path
+import os
 import subprocess
+from pathlib import Path
 
 import numpy as np
 import pyngp as ngp  # noqa
 import trimesh
+from pytorch3d.io import save_ply
 from tqdm import tqdm
 
-from repainting_3d_assets.view_generation.pt3d_mesh_io import load_obj
-from repainting_3d_assets.view_generation.utils3D import position_verts
+from repainting_3d_assets.nerf_reconstruction.train_ngp import suppress_output_fd
+
+
+def remove_intermediates(save_dir, resolution):
+    if "DEBUG" in os.environ:
+        return
+    Path(f"{save_dir}/input.ply.off").unlink(missing_ok=True)
+    Path(f"{save_dir}/input_{resolution}.ply.off").unlink(missing_ok=True)
+    Path(f"{save_dir}/input_{resolution}.ply").unlink(missing_ok=True)
 
 
 def remesh_subdivide_isotropic_planar(path_input, path_output, resolution):
@@ -26,6 +35,8 @@ def remesh_subdivide_isotropic_planar(path_input, path_output, resolution):
             path_output_off,
             "--resolution",
             str(resolution),
+            "--verbose",
+            str(1 if "DEBUG" in os.environ else 0),
         ],
     )
 
@@ -37,32 +48,19 @@ def remesh_subdivide_isotropic_planar(path_input, path_output, resolution):
 
 
 def nerf_to_mesh(
-    mesh_config,
-    snapshot,
-    swap_face=False,
+    meshes,
+    save_dir,
+    path_nerf_weights,
     resolution=384,
     num_samples=50,
     sigma=0.0005,
 ):
-    mode = ngp.TestbedMode.Nerf
-    testbed = ngp.Testbed(mode)
-    testbed.load_snapshot(snapshot)
+    with suppress_output_fd():
+        mode = ngp.TestbedMode.Nerf
+        testbed = ngp.Testbed(mode)
+        testbed.load_snapshot(path_nerf_weights)
 
-    trans_mat = mesh_config["trans_mat"]
-    mesh_path = mesh_config["obj"]
-    save_dir = mesh_config["save_dir"]
-
-    # load mesh and align with ngp
-    verts, faces, _ = load_obj(
-        mesh_path,
-        load_textures=False,
-        create_texture_atlas=False,
-        swap_face=swap_face,
-    )
-    faces = faces.verts_idx
-    verts = position_verts(verts, trans_mat, swap_face=swap_face)
-
-    trimesh.Trimesh(vertices=verts, faces=faces).export(f"{save_dir}/input.ply")
+    save_ply(f"{save_dir}/input.ply", meshes.verts_packed(), meshes.faces_packed())
     remesh_subdivide_isotropic_planar(
         f"{save_dir}/input.ply", f"{save_dir}/input_{resolution}.ply", resolution
     )
@@ -91,5 +89,4 @@ def nerf_to_mesh(
     mesh_out.export(f"{save_dir}/model.ply")
     mesh_out.export(f"{save_dir}/model.drc")
 
-    os.remove(f"{save_dir}/input.ply.off")
-    os.remove(f"{save_dir}/input_{resolution}.ply.off")
+    remove_intermediates(save_dir, resolution)

@@ -96,13 +96,10 @@ def inpaint_first_view(meshes, pipe, latents, inpaint_config, mesh_config, devic
     depth_tensor = (depth_tensor.max() - depth_tensor).float()
     depth_tensor = depth_tensor / (depth_tensor.max())
     if input_img_path == "":
-        print("using default bg")
         input_image = Image.fromarray((255 * np.ones((512, 512, 3))).astype(np.uint8))
     else:
-        print(f"reading external bg from {input_img_path}")
         input_image = Image.open(input_img_path).convert("RGB")
     mask = Image.fromarray((255 * np.ones((512, 512, 3))).astype(np.uint8))
-    print(view_dep_prompt(prompt_obj, next_angle, color_obj))
 
     image = pipe(
         prompt=view_dep_prompt(prompt_obj, next_angle, color_obj),
@@ -114,6 +111,7 @@ def inpaint_first_view(meshes, pipe, latents, inpaint_config, mesh_config, devic
         num_inference_steps=num_inference_steps,
         latents=latents,
         inpainting_strength=0,
+        desc="Generating style",
     ).images[0]
     i = cur_angle
     ipt_save_dir = create_dir(f"{dataset_dir}/{i}")
@@ -145,7 +143,6 @@ def inpaint_first_view(meshes, pipe, latents, inpaint_config, mesh_config, devic
     input_image = Image.fromarray((255 * img_color).astype("uint8"))
 
     bg_image = torch.tensor(img_color, device=device).float()
-    print(view_dep_prompt(prompt_obj, next_angle, color_obj))
     image = pipe(
         prompt=view_dep_prompt(prompt_obj, next_angle, color_obj),
         image=input_image,
@@ -156,6 +153,7 @@ def inpaint_first_view(meshes, pipe, latents, inpaint_config, mesh_config, devic
         num_inference_steps=num_inference_steps,
         latents=latents,
         inpainting_strength=0,
+        desc="Painting front view",
     ).images[0]
     image.save(f"{ipt_save_dir}/out.png")
     image = np.array(image.convert("RGBA"))
@@ -179,7 +177,6 @@ def inpaint_first_view(meshes, pipe, latents, inpaint_config, mesh_config, devic
 
 
 def inpaint_new_angle(
-    cur_angle,
     next_angle,
     inc_total,
     inpaint_config,
@@ -207,7 +204,6 @@ def inpaint_new_angle(
     next_angle = (cur_angle + angle_inc) % 360
     i = next_angle
 
-    print("backward_render")
     images = backward_oculusion_aware_render(
         cur_angle,
         next_angle,
@@ -273,6 +269,7 @@ def inpaint_new_angle(
         inpainting_strength=inpainting_strength,
         mask_blend_kernel=mask_blend_kernel,
         latent_blend_kernel=latent_blend_kernel,
+        desc=f"Inpainting {next_angle} deg. view",
     ).images[0]
 
     image.save(f"{ipt_save_dir}/out.png")
@@ -434,6 +431,7 @@ def inpaint_bidirectional(
         inpainting_strength=inpainting_strength,
         mask_blend_kernel=mask_blend_kernel,
         latent_blend_kernel=latent_blend_kernel,
+        desc=f"Inpainting {view_synth} deg. view (bi-directional)",
     ).images[0]
 
     image.save(f"{ipt_save_dir}/out.png")
@@ -496,11 +494,9 @@ def inpaint_facade(
     inc_limit = import_config_key(inpaint_config, "inc_limit", 120)
     init_angle = 0
     inc_total = 0
-    cur_angle = init_angle
     next_angle = init_angle
     while True:
-        cur_angle, next_angle, inc_total, transforms_config_out = inpaint_new_angle(
-            cur_angle,
+        _, next_angle, inc_total, transforms_config_out = inpaint_new_angle(
             next_angle,
             inc_total,
             inpaint_config,
@@ -518,11 +514,9 @@ def inpaint_facade(
     view_1 = (360 + inc_total + init_angle) % 360
 
     inc_total = 0
-    cur_angle = init_angle
     next_angle = init_angle
     while True:
-        cur_angle, next_angle, inc_total, transforms_config_out = inpaint_new_angle(
-            cur_angle,
+        _, next_angle, inc_total, transforms_config_out = inpaint_new_angle(
             next_angle,
             inc_total,
             inpaint_config,

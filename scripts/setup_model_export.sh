@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 set -e
-set -x
+if [ ! -z "${DEBUG}" ]; then
+    set -x
+fi
 
 if ! type source > /dev/null 2>&1; then
-    echo "Restarting the script with bash interpreter"
+    if [ ! -z "${DEBUG}" ]; then
+        echo "Restarting the script with bash interpreter"
+    fi
     bash "$0" "$@"
     exit $?
 fi

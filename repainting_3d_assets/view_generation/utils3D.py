@@ -8,7 +8,8 @@ from repainting_3d_assets.view_generation.utils import sharpness, listify_matrix
 
 
 def position_verts(verts, trans_mat, swap_face=True, shape_scale=1.2):
-    verts = torch.matmul(verts, trans_mat)
+    if trans_mat is not None:
+        verts = torch.matmul(verts, trans_mat)
     verts[:, 2] = verts[:, 2] * (-1)
 
     if not swap_face:

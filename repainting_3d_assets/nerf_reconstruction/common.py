@@ -8,7 +8,6 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import code
 import os
 import struct
 import sys
@@ -62,14 +61,6 @@ def add_instantngp_sys_path(path_instantngp, verbose=True):
     path = find_instantngp_binaries(path_instantngp, verbose=verbose)
     if path not in sys.path:
         sys.path.append(path)
-
-
-def repl(testbed):
-    print(
-        "-------------------\npress Ctrl-Z to return to gui\n---------------------------"
-    )
-    code.InteractiveConsole(locals=locals()).interact()
-    print("------- returning to gui...")
 
 
 def write_image_np(img_file, img, quality):
