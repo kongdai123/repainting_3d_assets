@@ -47,9 +47,9 @@ if [ ! -f "${CONDA}" -o ! -f "${CONDA_ACTIVATE}" ]; then
     exit 255
 fi
 
-"${CONDA}" install -y -n base --solver classic conda-libmamba-solver
+"${CONDA}" install -q -y -n base --solver classic conda-libmamba-solver
 "${CONDA}" config --set solver libmamba
 
-"${CONDA}" env create -y -n ${REPAINTING3D_ENV_NAME} -f "${SELF_DIR}/environment.yml"
+"${CONDA}" env create -q -y -n ${REPAINTING3D_ENV_NAME} -f "${SELF_DIR}/environment.yml"
 
 touch "${REPAINTING3D_CONDA_ROOT}/.marker.conda.completed"

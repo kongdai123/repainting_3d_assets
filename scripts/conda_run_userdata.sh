@@ -25,11 +25,11 @@ fi
 
 REPAINTING3D_ENV_NAME=${REPAINTING3D_ENV_NAME:-repainting_3d_assets}
 
-REPAINTING3D_ROOT="$1"
+REPAINTING3D_ROOT="$(realpath "$1")"
 shift
-PATH_IN=$(realpath "$1")
+PATH_IN="$(realpath "$1")"
 shift
-PATH_OUT=$(realpath "$1")
+PATH_OUT="$(realpath "$1")"
 shift
 PROMPT="$1"
 shift

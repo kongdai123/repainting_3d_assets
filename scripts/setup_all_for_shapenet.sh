@@ -19,7 +19,7 @@ if [ $# -ne 1 ]; then
     exit 255
 fi
 
-export REPAINTING3D_ROOT=$1
+export REPAINTING3D_ROOT="$(realpath "$1")"
 
 export REPAINTING3D_CONDA_ROOT="${REPAINTING3D_ROOT}/conda"
 export REPAINTING3D_DATASET_ROOT="${REPAINTING3D_ROOT}/dataset"
