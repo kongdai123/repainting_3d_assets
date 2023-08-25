@@ -31,3 +31,7 @@ COPY . ${REPAINTING3D_ROOT}/code
 RUN bash ${REPAINTING3D_ROOT}/code/scripts/setup_conda_bin.sh ${REPAINTING3D_ROOT}
 RUN bash ${REPAINTING3D_ROOT}/code/scripts/setup_conda_env.sh ${REPAINTING3D_ROOT}
 RUN bash ${REPAINTING3D_ROOT}/code/scripts/setup_instantngp.sh ${REPAINTING3D_ROOT}
+
+COPY docker_build_entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

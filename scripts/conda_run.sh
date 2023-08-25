@@ -11,9 +11,6 @@ if [ $# -lt 4 ]; then
 fi
 
 if ! type source > /dev/null 2>&1; then
-    if [ ! -z "${DEBUG}" ]; then
-        echo "Restarting the script with bash interpreter"
-    fi
     bash "$0" "$@"
     exit $?
 fi
@@ -25,11 +22,11 @@ fi
 
 REPAINTING3D_ENV_NAME=${REPAINTING3D_ENV_NAME:-repainting_3d_assets}
 
-REPAINTING3D_ROOT="$(realpath "$1")"
+REPAINTING3D_ROOT="$(readlink -f "$1")"
 shift
-PATH_IN="$(realpath "$1")"
+PATH_IN="$(readlink -f "$1")"
 shift
-PATH_OUT="$(realpath "$1")"
+PATH_OUT="$1"
 shift
 PROMPT="$1"
 shift
@@ -48,16 +45,17 @@ REPAINTING3D_BUILD_INSTALL_ROOT_DEFAULT="${REPAINTING3D_ROOT}/tools"
 REPAINTING3D_BUILD_INSTALL_ROOT="${REPAINTING3D_BUILD_INSTALL_ROOT:-${REPAINTING3D_BUILD_INSTALL_ROOT_DEFAULT}}"
 
 mkdir -p "${PATH_OUT}"
+PATH_OUT="$(readlink -f "${PATH_OUT}")"
 
-SELF=$(realpath "$0")
-SELF_DIR=$(dirname "${SELF}")
-REPAINTING3D_CODE_ROOT=$(realpath "${SELF_DIR}/..")
+SELF="$(readlink -f "$0")"
+SELF_DIR="$(dirname "${SELF}")"
+REPAINTING3D_CODE_ROOT="$(readlink -f "${SELF_DIR}/..")"
 
 export TRANSFORMERS_CACHE="${REPAINTING3D_ROOT}/hfcache"
 export HF_DATASETS_CACHE="${REPAINTING3D_ROOT}/hfcache"
 export HF_HOME="${REPAINTING3D_ROOT}/hfcache"
 
-cd "${REPAINTING3D_CODE_ROOT}" && python -m repainting_3d_assets.main_userdata \
+cd "${REPAINTING3D_CODE_ROOT}" && python -m repainting_3d_assets.main \
     --path_instantngp "${REPAINTING3D_INSTANTNGP_ROOT}/instant-ngp" \
     --path_in "${PATH_IN}" \
     --path_out "${PATH_OUT}" \

@@ -109,9 +109,8 @@ def train_nerf(args):
                     t.reset()
 
                 now = time.monotonic()
-                if now - tqdm_last_update > 0.1:
+                if now - tqdm_last_update > 0.1 or testbed.training_step == n_steps - 1:
                     t.update(testbed.training_step - old_training_step)
-                    t.set_postfix(loss=testbed.loss)
                     old_training_step = testbed.training_step
                     tqdm_last_update = now
 

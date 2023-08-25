@@ -5,15 +5,12 @@ if [ ! -z "${DEBUG}" ]; then
 fi
 
 if ! type source > /dev/null 2>&1; then
-    if [ ! -z "${DEBUG}" ]; then
-        echo "Restarting the script with bash interpreter"
-    fi
     bash "$0" "$@"
     exit $?
 fi
 SELF=$(readlink -f "${BASH_SOURCE[0]}")
 SELF_DIR=$(dirname "${SELF}")
-REPAINTING3D_CODE_ROOT=$(realpath "${SELF_DIR}/..")
+REPAINTING3D_CODE_ROOT=$(readlink -f "${SELF_DIR}/..")
 
 DOCKER=""
 

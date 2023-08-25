@@ -9,7 +9,7 @@ The asset is painted according to the text prompt specified as the last argument
 For example:
 
 ```shell
-sh scripts/docker_run_userdata.sh assets/sample.obj out/ "red dragon"
+sh scripts/docker_run.sh assets/sample.obj out/ "red dragon"
 ```
 
 The result can be found in the `out/` directory. It contains:
@@ -20,10 +20,10 @@ The result can be found in the `out/` directory. It contains:
 
 # Development
 
-Run `sh scripts/setup_all_for_userdata.sh <WORK>` to set up a new working directory pointed to by `<WORK>`. 
+Run `sh scripts/setup_all.sh <WORK>` to set up a new working directory pointed to by `<WORK>`. 
 This requires ~32 GB of disk space and installs a custom python runtime with [Instant NGP](https://github.com/NVlabs/instant-ngp).
 
-Once the setup completes, use `sh scripts/conda_run_userdata.sh <WORK> <PATH_ASSET> <PATH_OUTPUT_DIR> <PROMPT>` to process your custom 3D asset.
+Once the setup completes, use `sh scripts/conda_run.sh <WORK> <PATH_ASSET> <PATH_OUTPUT_DIR> <PROMPT>` to process your custom 3D asset.
 
 If this way of building fails, resort to using the docker image, either as described in the [Quick Start](#quick-start), or build one from scratch by running `sh scripts/docker_build.sh`. 
 
