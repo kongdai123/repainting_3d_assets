@@ -55,8 +55,6 @@ REPAINTING3D_CODE_ROOT=$(realpath "${SELF_DIR}/..")
 export TRANSFORMERS_CACHE="${REPAINTING3D_ROOT}/hfcache"
 export HF_DATASETS_CACHE="${REPAINTING3D_ROOT}/hfcache"
 export HF_HOME="${REPAINTING3D_ROOT}/hfcache"
-export PATH="${PATH}:${REPAINTING3D_BUILD_INSTALL_ROOT}/prefix/bin"
-export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${REPAINTING3D_BUILD_INSTALL_ROOT}/prefix/lib"
 
 cd "${REPAINTING3D_CODE_ROOT}" && python -m repainting_3d_assets.main_shapenet \
     --path_instantngp "${REPAINTING3D_INSTANTNGP_ROOT}/instant-ngp" \
