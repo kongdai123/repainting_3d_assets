@@ -34,8 +34,6 @@ CONDA="${ENV_ROOT}/miniconda3/bin/conda"
 CONDA_ACTIVATE="${ENV_ROOT}/miniconda3/bin/activate"
 
 "${CONDA}" install -q -y -n base --solver classic conda-libmamba-solver
-"${CONDA}" config --set solver libmamba
-
-"${CONDA}" env create -q -y -n "${REPAINTING3D_ENV_NAME}" -f "${ENV_SPEC}"
+"${CONDA}" env create -q -y -n "${REPAINTING3D_ENV_NAME}" -f "${ENV_SPEC}" --solver libmamba
 
 touch "${ENV_ROOT}/.marker.conda.completed"
