@@ -33,3 +33,8 @@ cd remesh_isotropic_planar
 git checkout ${REMESH_VERSION}
 cmake -B build -DCMAKE_BUILD_TYPE=Release ${CMAKE_EXTRA_ARGS}
 cmake --build build --target install -j
+
+if [ ! -z "${CLEANUP}" ]; then
+    cd ..
+    rm -rf remesh_isotropic_planar
+fi

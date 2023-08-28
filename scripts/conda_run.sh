@@ -56,7 +56,7 @@ export HF_DATASETS_CACHE="${REPAINTING3D_ROOT}/hfcache"
 export HF_HOME="${REPAINTING3D_ROOT}/hfcache"
 
 cd "${REPAINTING3D_CODE_ROOT}" && python -m repainting_3d_assets.main \
-    --path_instantngp "${REPAINTING3D_INSTANTNGP_ROOT}/instant-ngp" \
+    --path_instantngp "${REPAINTING3D_INSTANTNGP_ROOT}" \
     --path_in "${PATH_IN}" \
     --path_out "${PATH_OUT}" \
     --prompt "${PROMPT}" \

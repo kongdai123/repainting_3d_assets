@@ -59,7 +59,7 @@ export HF_DATASETS_CACHE="${REPAINTING3D_ROOT}/hfcache"
 export HF_HOME="${REPAINTING3D_ROOT}/hfcache"
 
 cd "${REPAINTING3D_CODE_ROOT}" && python -m repainting_3d_assets.main_shapenet \
-    --path_instantngp "${REPAINTING3D_INSTANTNGP_ROOT}/instant-ngp" \
+    --path_instantngp "${REPAINTING3D_INSTANTNGP_ROOT}" \
     --path_shapenet "${REPAINTING3D_DATASET_ROOT}" \
     --path_out "${REPAINTING3D_OUT_SHAPENET}" \
     --range_ids_list "$@"

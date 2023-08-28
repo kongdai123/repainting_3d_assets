@@ -38,5 +38,14 @@ for ARCH in ${NGP_ARCHS}; do
     echo "Compiling InstantNGP for architecture $ARCH"
     cmake . -B build_sm${ARCH} -DNGP_BUILD_WITH_GUI=OFF -DTCNN_CUDA_ARCHITECTURES=${ARCH}
     cmake --build build_sm${ARCH} --config RelWithDebInfo -j 4
+    mkdir -p ../build_sm${ARCH}
+    cp build_sm${ARCH}/*.so ../build_sm${ARCH}
     touch "${NGP_ROOT}/.marker.ingp.compiled.sm${ARCH}"
 done
+
+cp -r configs ..
+
+if [ ! -z "${CLEANUP}" ]; then
+    cd ..
+    rm -rf instant-ngp
+fi

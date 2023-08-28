@@ -23,7 +23,7 @@ export HF_DATASETS_CACHE="${WORK_ROOT}/hfcache"
 export HF_HOME="${WORK_ROOT}/hfcache"
 
 export REPAINTING3D_ENV_NAME=repainting_3d_assets
-export REPAINTING3D_INSTANTNGP_ARCHS=${REPAINTING3D_INSTANTNGP_ARCHS:-"60 70 75 80 86 89 90"}
+export REPAINTING3D_INSTANTNGP_ARCHS=${REPAINTING3D_INSTANTNGP_ARCHS:-"60 70 75 80 86"}
 
 bash "${SELF_DIR}/install_conda.sh" "${WORK_ROOT}/conda" "${SELF_DIR}/environment.yml"
 
