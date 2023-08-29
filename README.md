@@ -7,7 +7,12 @@
 This repository complements our BMVC'23 paper titled "Breathing New Life into 3D Assets with Generative Repainting".
 As the title suggests, our method takes a 3D model and paints it according to a text prompt :unicorn:.
 
-<img src="docs/teaser_360.gif" width="100%"/>
+<p align="center">
+<img src="doc/teaser_360.gif" height="384px"/>
+</p>
+<p align="center">
+Text prompt: "Pastel superhero unicorn"
+</p>
 
 ## Interactive Demo Gallery
 
@@ -17,7 +22,7 @@ Explore select models from the ShapeNetSem dataset, showcasing their texturing b
 
 ## Quick Start
 
-To paint your own 3D model, use either Colab or your local environment as described below. 
+To paint your own 3D model, use Colab or your local environment as described below. 
 
 ### Local Environment (15 min, recommended)
 
@@ -30,7 +35,7 @@ sh scripts/docker_run.sh assets/horse.ply out/ "pastel superhero unicorn"
 
 ### Google Colab (30 min)
 
-Colab requires the GPU runtime (and thus a subscription) and takes extra 15 minutes to install the environment.
+Colab requires the GPU runtime (and thus a subscription) and takes an extra 15 minutes to install the environment.
 It eliminates the need to run the application locally and use Docker. 
 Unlike the dockerized environment, the Colab functionality is not guaranteed. Click the badge to start:
 
@@ -39,7 +44,7 @@ Unlike the dockerized environment, the Colab functionality is not guaranteed. Cl
 ## Development
 
 Run `sh scripts/setup.sh <WORK>` to set up a new working directory pointed to by `<WORK>`. 
-This requires ~30 GB of disk space and installs a custom python runtime with all dependencies.
+This requires ~30 GB of disk space and installs a custom Python runtime with all dependencies.
 
 Once the setup completes, use `sh scripts/conda_run.sh <WORK> <PATH_MODEL> <PATH_OUTPUT_DIR> <PROMPT>` to paint your 3D model located at `PATH_MODEL` according to the text `PROMPT` and put the results in `PATH_OUTPUT_DIR`.
 
