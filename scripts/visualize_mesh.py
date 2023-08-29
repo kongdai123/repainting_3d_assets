@@ -24,6 +24,10 @@ def visualize(title, path, colab=False):
                 flatshading=True,
                 vertexcolor=vertex_colors,
                 opacity=1.0,
+                lighting=dict(
+                    ambient=0.8, diffuse=0.8, specular=1, roughness=0.4, fresnel=0.2
+                ),
+                lightposition=dict(x=100, y=200, z=0),
             )
         ],
         layout=dict(

@@ -1,35 +1,63 @@
 # Breathing New Life into 3D Assets with Generative Repainting
 
-This repository implements a method from our BMVC'23 paper "Breathing New Life into 3D Assets with Generative Repainting".
+[![Website](doc/badges/badge-website.svg)](https://www.obukhov.ai/repainting_3d_assets)
+[![Open In Colab](doc/badges/badge-colab.svg)](https://colab.research.google.com/drive/18mDpuYO5TuI6tSkQk9ls2rS9sciNpR-c?usp=sharing)
+[![Docker](doc/badges/badge-docker.svg)](https://hub.docker.com/r/toshas/repainting_3d_assets)
 
-# Quick Start
+This repository complements our BMVC'23 paper titled "Breathing New Life into 3D Assets with Generative Repainting".
+As the title suggests, our method takes a 3D model and paints it according to a text prompt :unicorn:.
 
-Install a [Docker](https://www.docker.com/)-compatible runtime and use the following command to repaint your 3D asset.
-The asset is painted according to the text prompt specified as the last argument. 
-For example:
+<img src="docs/teaser_360.gif" width="100%"/>
+
+## Interactive Demo Gallery
+
+Explore select models from the ShapeNetSem dataset, showcasing their texturing by our method and competition, on the project page: 
+
+[<img src="doc/badges/badge-website.svg" height="32"/>](https://www.obukhov.ai/repainting_3d_assets)
+
+## Quick Start
+
+To paint your own 3D model, use either Colab or your local environment as described below. 
+
+### Local Environment (15 min, recommended)
+
+Clone the repository and run the command below in the repository root. 
+The process finishes in under 15 min on a machine with a GPU.
 
 ```shell
-sh scripts/docker_run.sh assets/sample.obj out/ "red dragon"
+sh scripts/docker_run.sh assets/horse.ply out/ "pastel superhero unicorn"
 ```
 
-The result can be found in the `out/` directory. It contains:
+### Google Colab (30 min)
 
-- `model.mp4`, a 360-degree spin view video of the result;
-- `model.msgpack`, an NeRF file with the output in Instant NGP format;
-- `model.obj`, a standard 3D model that has the geometry of the input 3D model and painting of the NeRF output.
+Colab requires the GPU runtime (and thus a subscription) and takes extra 15 minutes to install the environment.
+It eliminates the need to run the application locally and use Docker. 
+Unlike the dockerized environment, the Colab functionality is not guaranteed. Click the badge to start:
 
-# Development
+[<img src="doc/badges/badge-colab.svg" height="32"/>](https://colab.research.google.com/drive/18mDpuYO5TuI6tSkQk9ls2rS9sciNpR-c?usp=sharing)
 
-Run `sh scripts/setup_all.sh <WORK>` to set up a new working directory pointed to by `<WORK>`. 
-This requires ~32 GB of disk space and installs a custom python runtime with [Instant NGP](https://github.com/NVlabs/instant-ngp).
+## Development
 
-Once the setup completes, use `sh scripts/conda_run.sh <WORK> <PATH_ASSET> <PATH_OUTPUT_DIR> <PROMPT>` to process your custom 3D asset.
+Run `sh scripts/setup.sh <WORK>` to set up a new working directory pointed to by `<WORK>`. 
+This requires ~30 GB of disk space and installs a custom python runtime with all dependencies.
 
-If this way of building fails, resort to using the docker image, either as described in the [Quick Start](#quick-start), or build one from scratch by running `sh scripts/docker_build.sh`. 
+Once the setup completes, use `sh scripts/conda_run.sh <WORK> <PATH_MODEL> <PATH_OUTPUT_DIR> <PROMPT>` to paint your 3D model located at `PATH_MODEL` according to the text `PROMPT` and put the results in `PATH_OUTPUT_DIR`.
 
 ### ShapeNetSem
 
-Run `sh scripts/setup_all_for_shapenet.sh <WORK>` to set up a new working directory pointed to by `<WORK>`. 
-This requires ~100 GB of disk space and installs a custom python runtime, compiles [Instant NGP](https://github.com/NVlabs/instant-ngp), and downloads the [ShapeNetSem](https://shapenet.org/) dataset.
+Rerun `sh scripts/setup.sh <WORK> --with-shapenet` to complement the setup with the dataset. 
 
 Once the setup completes, use `sh scripts/conda_run_shapenet.sh <WORK> <ID_1> ... <ID_N>` to process models from the ShapeNetSem dataset.
+
+## Citation
+
+Please support our research by citing our paper:
+```
+@inproceedings{wang2023breathing,
+    title={Breathing New Life into 3D Assets with Generative Repainting},
+    author={Wang, Tianfu and Kanakis, Menelaos and Schindler, Konrad and Van Gool, Luc and Obukhov, Anton},
+    booktitle={Proceedings of the British Machine Vision Conference (BMVC)},
+    year={2023},
+    publisher={BMVA Press}
+}
+```
