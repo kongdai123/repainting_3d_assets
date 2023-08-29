@@ -4,14 +4,19 @@
 [![Open In Colab](doc/badges/badge-colab.svg)](https://colab.research.google.com/drive/18mDpuYO5TuI6tSkQk9ls2rS9sciNpR-c?usp=sharing)
 [![Docker](doc/badges/badge-docker.svg)](https://hub.docker.com/r/toshas/repainting_3d_assets)
 
-This repository complements our BMVC'23 paper titled "Breathing New Life into 3D Assets with Generative Repainting".
-As the title suggests, our method takes a 3D model and paints it according to a text prompt :unicorn:.
+This repository complements our BMVC'23 paper titled "Breathing New Life into 3D Assets with Generative Repainting" by
+[Tianfu Wang](https://scholar.google.com/citations?user=ZqWxrkwAAAAJ&hl=en), 
+[Menelaos Kanakis](https://scholar.google.ch/citations?user=4kTFtHgAAAAJ&hl=en),
+[Konrad Schindler](https://igp.ethz.ch/personen/person-detail.html?persid=143986),
+[Luc Van Gool](https://scholar.google.ch/citations?user=TwMib_QAAAAJ&hl=en), and
+[Anton Obukhov](https://www.obukhov.ai/).
+
+
+As the title suggests, our method takes a 3D model and paints it according to a text prompt:
 
 <p align="center">
-<img src="doc/teaser_360.gif" height="384px"/>
-</p>
-<p align="center">
-Text prompt: "Pastel superhero unicorn"
+<img src="doc/teaser_360.gif" height="384px"/><br>
+Left: Input 3D model. Right: The same model painted by our method with the user-specified text prompt: "Pastel superhero unicorn".
 </p>
 
 ## Interactive Demo Gallery
@@ -54,7 +59,7 @@ Rerun `sh scripts/setup.sh <WORK> --with-shapenet` to complement the setup with 
 
 Once the setup completes, use `sh scripts/conda_run_shapenet.sh <WORK> <ID_1> ... <ID_N>` to process models from the ShapeNetSem dataset.
 
-## Citation
+## Citation :unicorn:
 
 Please support our research by citing our paper:
 ```
