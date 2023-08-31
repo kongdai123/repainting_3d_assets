@@ -11,11 +11,10 @@ This repository complements our BMVC'23 paper titled "Breathing New Life into 3D
 [Luc Van Gool](https://scholar.google.ch/citations?user=TwMib_QAAAAJ&hl=en), and
 [Anton Obukhov](https://www.obukhov.ai/).
 
-
 As the title suggests, our method takes a 3D model and paints it according to a text prompt:
 
 <p align="center">
-<img src="doc/teaser_360.gif" height="384px"/><br>
+<img src="doc/teaser_360.gif"/><br>
 Left: Input 3D model. Right: The same model painted by our method with the user-specified text prompt: "Pastel superhero unicorn".
 </p>
 
