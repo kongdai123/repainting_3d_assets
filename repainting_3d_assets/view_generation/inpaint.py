@@ -431,7 +431,7 @@ def inpaint_bidirectional(
         inpainting_strength=inpainting_strength,
         mask_blend_kernel=mask_blend_kernel,
         latent_blend_kernel=latent_blend_kernel,
-        desc=f"Inpainting {view_synth} deg. view (bi-directional)",
+        desc=f"Inpainting {view_synth} deg. view",
     ).images[0]
 
     image.save(f"{ipt_save_dir}/out.png")
