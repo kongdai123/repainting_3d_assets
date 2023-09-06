@@ -3,6 +3,7 @@
 [![Website](doc/badges/badge-website.svg)](https://www.obukhov.ai/repainting_3d_assets)
 [![Open In Colab](doc/badges/badge-colab.svg)](https://colab.research.google.com/drive/18mDpuYO5TuI6tSkQk9ls2rS9sciNpR-c?usp=sharing)
 [![Docker](doc/badges/badge-docker.svg)](https://hub.docker.com/r/toshas/repainting_3d_assets)
+[![License](doc/badges/badge-license.svg)](LICENSE)
 
 This repository complements our BMVC'23 paper titled "Breathing New Life into 3D Assets with Generative Repainting" by
 [Tianfu Wang](https://scholar.google.com/citations?user=ZqWxrkwAAAAJ&hl=en), 
@@ -71,13 +72,8 @@ Please support our research by citing our paper:
 }
 ```
 
-
 ## License
 
-This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License][cc-by-nc-sa].
+This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 
-[![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
-
-[cc-by-nc-sa]: http://creativecommons.org/licenses/by-nc-sa/4.0/
-[cc-by-nc-sa-image]: https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png
-[cc-by-nc-sa-shield]: https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg
+[<img src="doc/badges/badge-license.svg" height="32"/>](http://creativecommons.org/licenses/by-nc-sa/4.0/)
