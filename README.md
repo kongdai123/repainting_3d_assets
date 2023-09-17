@@ -5,7 +5,7 @@
 [![Docker](doc/badges/badge-docker.svg)](https://hub.docker.com/r/toshas/repainting_3d_assets)
 [![License](doc/badges/badge-license.svg)](LICENSE)
 
-This repository complements our BMVC'23 paper titled "Breathing New Life into 3D Assets with Generative Repainting" by
+This repository complements our (Oral) BMVC'23 paper titled "Breathing New Life into 3D Assets with Generative Repainting" by
 [Tianfu Wang](https://scholar.google.com/citations?user=ZqWxrkwAAAAJ&hl=en), 
 [Menelaos Kanakis](https://scholar.google.ch/citations?user=4kTFtHgAAAAJ&hl=en),
 [Konrad Schindler](https://igp.ethz.ch/personen/person-detail.html?persid=143986),
