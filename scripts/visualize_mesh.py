@@ -25,9 +25,9 @@ def visualize(title, path, colab=False):
                 vertexcolor=vertex_colors,
                 opacity=1.0,
                 lighting=dict(
-                    ambient=0.8, diffuse=0.8, specular=1, roughness=0.4, fresnel=0.2
+                    ambient=1.0, diffuse=0.8, specular=1, roughness=0.4, fresnel=0.2
                 ),
-                lightposition=dict(x=100, y=200, z=0),
+                lightposition=dict(x=64, y=64, z=0),
             )
         ],
         layout=dict(
@@ -37,7 +37,7 @@ def visualize(title, path, colab=False):
                 yaxis=dict(visible=False),
                 zaxis=dict(visible=False),
                 camera=dict(
-                    eye=dict(x=1.5, y=0, z=-0.75),
+                    eye=dict(x=-1.5, y=0, z=0.75),
                     up=dict(x=0, y=1, z=0),
                 ),
             ),
