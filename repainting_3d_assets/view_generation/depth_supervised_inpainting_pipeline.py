@@ -16,19 +16,10 @@ import contextlib
 import inspect
 from typing import Callable, List, Optional, Union
 
-import torch
-
 import PIL
-from diffusers.utils import is_accelerate_available
-from packaging import version
-from tqdm import tqdm
-from transformers import (
-    CLIPTextModel,
-    CLIPTokenizer,
-    DPTFeatureExtractor,
-    DPTForDepthEstimation,
-)
-
+import numpy as np
+import skimage.measure
+import torch
 from diffusers.configuration_utils import FrozenDict
 from diffusers.models import AutoencoderKL, UNet2DConditionModel
 from diffusers.pipeline_utils import DiffusionPipeline, ImagePipelineOutput
@@ -41,10 +32,19 @@ from diffusers.schedulers import (
     PNDMScheduler,
 )
 from diffusers.utils import PIL_INTERPOLATION, deprecate, logging
+from diffusers.utils import is_accelerate_available
+from packaging import version
+from tqdm import tqdm
+from transformers import (
+    CLIPTextModel,
+    CLIPTokenizer,
+    DPTFeatureExtractor,
+    DPTForDepthEstimation,
+)
+
+from repainting_3d_assets.view_generation.mask_operations import blend_mask, blend_img
 
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
-
-from .mask_options import *
 
 
 # Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img.preprocess

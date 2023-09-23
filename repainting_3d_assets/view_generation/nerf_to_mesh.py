@@ -72,9 +72,9 @@ def nerf_to_mesh(
 
     # align with instant ngp frame of reference and pad
     verts_ngp = np.zeros((verts.shape[0] + padd_num, 3))
-    verts_ngp[:, 0] = np.pad(verts[:, 2], (0, padd_num), "constant")
+    verts_ngp[:, 0] = -np.pad(verts[:, 2], (0, padd_num), "constant")
     verts_ngp[:, 1] = np.pad(verts[:, 1], (0, padd_num), "constant")
-    verts_ngp[:, 2] = -np.pad(verts[:, 0], (0, padd_num), "constant")
+    verts_ngp[:, 2] = np.pad(verts[:, 0], (0, padd_num), "constant")
     verts_ngp = verts_ngp * 0.33 + 0.5
 
     # sample from instantngp

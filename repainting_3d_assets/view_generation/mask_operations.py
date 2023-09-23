@@ -40,7 +40,7 @@ mask_proc_options = {
     2: erode_pool_mask,
     3: pool_mask,
 }
-mask_options = ["ori", "erode", "erode_pooled", "pooled_only"]
+mask_ops = ["ori", "erode", "erode_pooled", "pooled_only"]
 
 
 def inpaint_opencv(image_pil, mask_pil):
