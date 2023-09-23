@@ -73,7 +73,7 @@ def render_depth_map(angle, meshes, inpaint_config, mesh_config, device):
         elev_angles = torch.tensor([0]).to(device)
         azim_angles = torch.tensor([angle]).to(device)
         R, T = look_at_view_transform(
-            (Z_near + Z_far) / 2, elev_angles.flatten(), (azim_angles + 180).flatten()
+            (Z_near + Z_far) / 2, elev_angles.flatten(), (azim_angles).flatten()
         )
         cameras = FoVPerspectiveCameras(device=device, R=R, T=T, fov=fov)
         rasterizer_mesh = MeshRasterizer(
@@ -341,7 +341,7 @@ def render_silhouette(
     elev_angles = torch.tensor([0]).to(device)
     azim_angles = torch.tensor([angle]).to(device)
     R, T = look_at_view_transform(
-        (Z_near + Z_far) / 2, elev_angles.flatten(), (azim_angles + 180).flatten()
+        (Z_near + Z_far) / 2, elev_angles.flatten(), (azim_angles).flatten()
     )
     cameras = FoVPerspectiveCameras(device=device, R=R, T=T, fov=fov)
     rasterizer_mesh = MeshRasterizer(
