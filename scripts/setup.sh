@@ -18,9 +18,11 @@ fi
 
 export WORK_ROOT="$(readlink -f "$1")"
 
-export TRANSFORMERS_CACHE="${WORK_ROOT}/hfcache"
-export HF_DATASETS_CACHE="${WORK_ROOT}/hfcache"
-export HF_HOME="${WORK_ROOT}/hfcache"
+if [ -z "${REPAINTING3D_DO_NOT_MANAGE_HFCACHE}" ]; then
+    export TRANSFORMERS_CACHE="${WORK_ROOT}/hfcache"
+    export HF_DATASETS_CACHE="${WORK_ROOT}/hfcache"
+    export HF_HOME="${WORK_ROOT}/hfcache"
+fi
 
 export REPAINTING3D_ENV_NAME=repainting_3d_assets
 export REPAINTING3D_INSTANTNGP_ARCHS=${REPAINTING3D_INSTANTNGP_ARCHS:-"60 70 75 80 86"}

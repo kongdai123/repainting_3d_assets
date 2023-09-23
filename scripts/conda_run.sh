@@ -51,9 +51,11 @@ SELF="$(readlink -f "$0")"
 SELF_DIR="$(dirname "${SELF}")"
 REPAINTING3D_CODE_ROOT="$(readlink -f "${SELF_DIR}/..")"
 
-export TRANSFORMERS_CACHE="${REPAINTING3D_ROOT}/hfcache"
-export HF_DATASETS_CACHE="${REPAINTING3D_ROOT}/hfcache"
-export HF_HOME="${REPAINTING3D_ROOT}/hfcache"
+if [ -z "${REPAINTING3D_DO_NOT_MANAGE_HFCACHE}" ]; then
+    export TRANSFORMERS_CACHE="${REPAINTING3D_ROOT}/hfcache"
+    export HF_DATASETS_CACHE="${REPAINTING3D_ROOT}/hfcache"
+    export HF_HOME="${REPAINTING3D_ROOT}/hfcache"
+fi
 
 cd "${REPAINTING3D_CODE_ROOT}" && python -m repainting_3d_assets.main \
     --path_instantngp "${REPAINTING3D_INSTANTNGP_ROOT}" \
