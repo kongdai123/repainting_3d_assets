@@ -10,9 +10,11 @@ from repainting_3d_assets.view_generation.utils import sharpness, listify_matrix
 def position_verts(verts, trans_mat, swap_face=True, shape_scale=1.2):
     if trans_mat is not None:
         verts = torch.matmul(verts, trans_mat)
-    if swap_face:
+    verts[:, 2] = verts[:, 2] * (-1)
+
+    if not swap_face:
         verts[:, 0] = verts[:, 0] * (-1)
-    
+
     verts = verts - (verts.max(0).values + verts.min(0).values) * 0.5
 
     verts = verts / torch.sqrt(torch.sum(verts * verts, axis=1)).max()
