@@ -8,9 +8,9 @@ from PIL import ImageOps, Image
 from pytorch3d.io import load_ply
 from pytorch3d.structures import Meshes
 
-from repainting_3d_assets.view_generation.mask_options import (
+from repainting_3d_assets.view_generation.mask_operations import (
     mask_proc_options,
-    mask_options,
+    mask_ops,
 )
 from repainting_3d_assets.view_generation.pt3d_mesh_io import load_obj
 from repainting_3d_assets.view_generation.reproj import (
@@ -196,7 +196,7 @@ def inpaint_new_angle(
     inpainting_strength = import_config_key(inpaint_config, "inpainting_strength", 1)
     prompt_obj = mesh_config["prompt"]
     color_obj = import_config_key(mesh_config, "color", "")
-    mask_option = inpaint_config["mask_blend"]
+    mask_operation = inpaint_config["mask_blend"]
     mask_blend_kernel = import_config_key(inpaint_config, "mask_blend_kernel", -1)
     latent_blend_kernel = import_config_key(inpaint_config, "latent_blend_kernel", -1)
 
@@ -241,8 +241,8 @@ def inpaint_new_angle(
     mask = images[0][:, :, 3].cpu().numpy()
 
     mask_uint8 = (mask * 255).astype(np.uint8)
-    mask = mask_proc_options[mask_option](mask_uint8, kernel_size=5)
-    mask_path = f"{ipt_input_dir}/mask_{mask_options[mask_option]}.png"
+    mask = mask_proc_options[mask_operation](mask_uint8, kernel_size=5)
+    mask_path = f"{ipt_input_dir}/mask_{mask_ops[mask_operation]}.png"
     cv2.imwrite(mask_path, mask)
 
     input_image = Image.open(img_path)
