@@ -32,8 +32,8 @@ bash "${SELF_DIR}/install_conda.sh" "${WORK_ROOT}/conda" "${SELF_DIR}/environmen
 source "${WORK_ROOT}/conda/miniconda3/bin/activate" "${REPAINTING3D_ENV_NAME}"
 
 bash "${SELF_DIR}/install_instantngp.sh" "${WORK_ROOT}/instantngp" "${SELF_DIR}/instant_ngp_patches" "${REPAINTING3D_INSTANTNGP_ARCHS}"
-
 bash "${SELF_DIR}/install_model_export.sh" "${WORK_ROOT}/conda/miniconda3/envs/${REPAINTING3D_ENV_NAME}"
+bash "${SELF_DIR}/install_draco.sh" "${WORK_ROOT}/conda/miniconda3/envs/${REPAINTING3D_ENV_NAME}"
 
 if [ "$2" = "--with-shapenet" ]; then
     bash "${SELF_DIR}/install_dataset.sh" "${WORK_ROOT}/dataset"

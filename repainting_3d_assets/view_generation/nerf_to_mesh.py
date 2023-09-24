@@ -47,6 +47,13 @@ def remesh_subdivide_isotropic_planar(path_input, path_output, resolution):
     mesh.export(path_output)
 
 
+def compress_glb(path_input, path_output, bits=28):
+    draco_transcoder = trimesh.util.which("draco_transcoder")
+    subprocess.check_output(
+        [draco_transcoder, "-qp", str(int(bits)), "-i", path_input, "-o", path_output]
+    )
+
+
 def nerf_to_mesh(
     meshes,
     save_dir,
@@ -88,5 +95,7 @@ def nerf_to_mesh(
     mesh_out = trimesh.Trimesh(vertices=verts, faces=faces, vertex_colors=color_ngp)
     mesh_out.export(f"{save_dir}/model.ply")
     mesh_out.export(f"{save_dir}/model.drc")
+    mesh_out.export(f"{save_dir}/model.glb")
+    compress_glb(f"{save_dir}/model.glb", f"{save_dir}/model_draco.glb")
 
     remove_intermediates(save_dir, resolution)
