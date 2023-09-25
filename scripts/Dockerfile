@@ -1,6 +1,4 @@
-FROM nvidia/cuda:11.8.0-devel-ubuntu20.04
-
-ENV NGP_EXTRA_CMAKE_ARGS="-DCUDA_VERSION=11.8"
+FROM nvidia/cuda:12.0.1-devel-ubuntu20.04
 
 ARG DEBUG
 
