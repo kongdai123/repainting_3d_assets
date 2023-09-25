@@ -50,7 +50,7 @@ docker run \
     -v "${PATH_IN_DIR}":/repainting_3d_assets/input \
     -v "${PATH_OUT}":/repainting_3d_assets/output \
     ${EXTRA} \
-    toshas/repainting_3d_assets:v1 \
+    toshas/repainting_3d_assets:v2 \
     bash /repainting_3d_assets/code/scripts/conda_run.sh \
         /repainting_3d_assets \
         "/repainting_3d_assets/input/${PATH_IN_FILE}" \

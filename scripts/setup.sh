@@ -25,15 +25,15 @@ if [ -z "${REPAINTING3D_DO_NOT_MANAGE_HFCACHE}" ]; then
 fi
 
 export REPAINTING3D_ENV_NAME=repainting_3d_assets
-export REPAINTING3D_INSTANTNGP_ARCHS=${REPAINTING3D_INSTANTNGP_ARCHS:-"60 70 75 80 86"}
+export REPAINTING3D_INSTANTNGP_ARCHS=${REPAINTING3D_INSTANTNGP_ARCHS:-"60 70 75 80 86 89 90"}
 
 bash "${SELF_DIR}/install_conda.sh" "${WORK_ROOT}/conda" "${SELF_DIR}/environment.yml"
 
 source "${WORK_ROOT}/conda/miniconda3/bin/activate" "${REPAINTING3D_ENV_NAME}"
 
 bash "${SELF_DIR}/install_instantngp.sh" "${WORK_ROOT}/instantngp" "${SELF_DIR}/instant_ngp_patches" "${REPAINTING3D_INSTANTNGP_ARCHS}"
-
 bash "${SELF_DIR}/install_model_export.sh" "${WORK_ROOT}/conda/miniconda3/envs/${REPAINTING3D_ENV_NAME}"
+bash "${SELF_DIR}/install_draco.sh" "${WORK_ROOT}/conda/miniconda3/envs/${REPAINTING3D_ENV_NAME}"
 
 if [ "$2" = "--with-shapenet" ]; then
     bash "${SELF_DIR}/install_dataset.sh" "${WORK_ROOT}/dataset"
