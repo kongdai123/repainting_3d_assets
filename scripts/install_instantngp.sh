@@ -36,7 +36,7 @@ for ARCH in ${NGP_ARCHS}; do
         continue
     fi
     echo "Compiling InstantNGP for architecture $ARCH"
-    cmake . -B build_sm${ARCH} -DNGP_BUILD_WITH_GUI=OFF -DTCNN_CUDA_ARCHITECTURES=${ARCH}
+    cmake . -B build_sm${ARCH} -DNGP_BUILD_WITH_GUI=OFF -DTCNN_CUDA_ARCHITECTURES=${ARCH} ${NGP_EXTRA_CMAKE_ARGS}
     cmake --build build_sm${ARCH} --config RelWithDebInfo -j 4
     mkdir -p ../build_sm${ARCH}
     cp build_sm${ARCH}/*.so ../build_sm${ARCH}
