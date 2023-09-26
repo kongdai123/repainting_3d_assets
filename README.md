@@ -2,6 +2,7 @@
 
 [![Website](doc/badges/badge-website.svg)](https://www.obukhov.ai/repainting_3d_assets)
 [![Paper](doc/badges/badge-pdf.svg)](https://arxiv.org/abs/2309.08523)
+[![HF Space](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Space-blue)](https://huggingface.co/spaces/toshas/repainting_3d_assets/)
 [![Open In Colab](doc/badges/badge-colab.svg)](https://colab.research.google.com/drive/18mDpuYO5TuI6tSkQk9ls2rS9sciNpR-c?usp=sharing)
 [![Docker](doc/badges/badge-docker.svg)](https://hub.docker.com/r/toshas/repainting_3d_assets)
 [![License](doc/badges/badge-license.svg)](LICENSE)
