@@ -185,9 +185,9 @@ def backward_oculusion_aware_render(
     render_depth_map(cur_angle, meshes, inpaint_config, mesh_config, device)
 
     next_normal_path = f"{dataset_dir}/{next_angle}/depth/out_norm_ptc.pt"
-    next_normal = torch.load(next_normal_path)[:, :, 0]
+    next_normal = torch.load(next_normal_path, weights_only=True)[:, :, 0]
     normal_path = f"{dataset_dir}/{cur_angle}/depth/out_norm_ptc.pt"
-    normal = torch.load(normal_path)[:, :, 0]
+    normal = torch.load(normal_path, weights_only=True)[:, :, 0]
 
     img_path = f"{dataset_dir}/{cur_angle}/out_alpha.png"
     if use_train:
